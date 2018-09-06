@@ -1,21 +1,8 @@
 #![no_std]
-#![feature(try_from)]
-#![cfg_attr(feature = "set_panic_handler", feature(panic_handler))]
-#![cfg_attr(feature = "set_panic_handler", feature(lang_items))]
-
-extern crate embedded_hal;
+#![allow(non_upper_case_globals)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
 
 pub mod libc;
 
-pub mod raw;
-
-pub mod saul;
-pub mod stdio;
-pub mod thread;
-pub mod shell;
-pub mod i2c;
-pub mod gnrc;
-pub mod msg;
-
-#[cfg(feature = "set_panic_handler")]
-mod panic;
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
