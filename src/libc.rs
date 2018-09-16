@@ -94,7 +94,7 @@ macro_rules! cstr {
     ($s:expr) => (
         {
             let a = concat!($s, "\0");
-            unsafe { ::riot_sys::libc::CStr::from_bytes_with_nul_unchecked(a.as_bytes()) }
+            unsafe { ::libc::CStr::from_bytes_with_nul_unchecked(a.as_bytes()) }
         }
     )
 }
@@ -102,5 +102,6 @@ macro_rules! cstr {
 #[test]
 fn test()
 {
-    let a: &CStr = cstr!("Hello");
+    let a = cstr!("Hello");
+    assert!(a.to_bytes_with_nul() == "Hello\0".as_bytes());
 }
