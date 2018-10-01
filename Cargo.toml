@@ -5,3 +5,4 @@ authors = ["chrysn <chrysn@fsfe.org>"]
 
 [build-dependencies]
 bindgen = "0.40.0"
+shlex = "0.1.1"
