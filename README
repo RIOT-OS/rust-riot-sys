@@ -21,7 +21,7 @@ for-cargo: ${BINDIR}/riot-expanded-headers.h
 
 ${BINDIR}/riot-expanded-headers.h: ../../riot-sys/riot-all.h
 	$(Q)$(CC) $(CFLAGS_WITH_MACROS) $(INCLUDES) $< -fdirectives-only -E -o $@
-	@echo "You may now run cargo with RIOT_EXPANDED_HEADER=$@"
+	@echo "You may now run cargo with RIOT_EXPANDED_HEADER=$@ RIOT_CFLAGS=\"${RIOT_CFLAGS}\""
 
 .PHONY: for-cargo
 ~~~~
