@@ -1,6 +1,7 @@
 #include <shell.h>
 #include <thread.h>
 #include <stdio_base.h>
+#include <periph/adc.h>
 #include <periph/i2c.h>
 #include <net/gnrc.h>
 #include <net/gnrc/udp.h>
