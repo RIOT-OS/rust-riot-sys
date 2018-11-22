@@ -12,3 +12,7 @@
 #include <net/gcoap.h>
 #include <saul.h>
 #include <saul_reg.h>
+#ifdef MODULE_PTHREAD
+// for rwlock
+#include <pthread.h>
+#endif
