@@ -35,6 +35,10 @@ the resulting environment variables to your cargo invocations. This crate's
 build.rs script will take them up, adopt the relevant C flags, and populate the
 `riot_sys` crate with the raw bindings.
 
+Please note that riot-sys does not make any attempt to alter the Cargo target;
+it typically needs to be set to `thumbv7m-none-eabi` for ARM Cortex devices, or
+to `i686-unknown-linux-gnu` for the native board.
+
 Extension
 ---------
 
