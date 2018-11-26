@@ -9,7 +9,9 @@
 #include <net/gnrc/ipv6.h>
 #include <net/gnrc/nettype.h>
 #include <net/gnrc/netapi.h>
+#ifdef MODULE_GCOAP
 #include <net/gcoap.h>
+#endif
 #include <saul.h>
 #include <saul_reg.h>
 #ifdef MODULE_PTHREAD
