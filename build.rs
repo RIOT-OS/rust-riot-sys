@@ -6,20 +6,16 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    let sourcefile = env::var("RIOT_EXPANDED_HEADER")
-        .expect("Please set RIOT_EXPANDED_HEADER, see README for details.");
-
     let cflags = env::var("RIOT_CFLAGS")
-        .expect("Please pass in the same RIOT_CFLAGS like RIOT_EXPANDED_HEADER.");
+        .expect("Please pass in RIOT_CFLAGS; see README.md for details.");
     let cflags = shlex::split(&cflags)
         .expect("Odd shell escaping in RIOT_CFLAGS");
 
-    println!("cargo:rerun-if-env-changed=RIOT_EXPANDED_HEADER");
     println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
-    println!("cargo:rerun-if-changed={}", sourcefile);
+    println!("cargo:rerun-if-changed=riot-all.h");
 
     let bindings = builder()
-        .header(sourcefile)
+        .header("riot-all.h")
         .clang_args(cflags.iter().filter(|x| {
             match x.as_ref() {
                 "-Werror" => false,

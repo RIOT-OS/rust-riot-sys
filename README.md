@@ -12,32 +12,23 @@ configuration set in the RIOT build system, eg. the presence of features or the
 CPU used. This does not only affect the preprocessed C code, but also compiler
 flags that govern the effective sizes of structs and need to be known to Cargo.
 
-Currently, that information is transported in two components: A preprocessed
-header file that has all includes and ifdefs expanded, and the CFLAGS
-themselves. (It should be possible to later only use the CFLAGS).
+All the relevant information -- including the location of the actually used
+RIOT header files -- is contained in the RIOT environment variables
+`CFLAGS_WITH_MACROS` and `INCLUDES`; both need to be passed in to the Rust
+build system as a `RIOT_CFLAGS` environment variable.
 
-To generate the expanded header file, you can insert a snippet like this into
-your RIOT Makefile:
+When using riot-sys, it is usually easiest to run from a target within the Make
+system like this:
 
 ~~~~
+target/thumbv7m-none-eabi/debug/libmy_app.a: always
+	CC= CFLAGS= CPPFLAGS= RIOT_FLAGS="$(CFLAGS_WITH_MACROS) $(INCLUDES)" cargo build --target thumbv7m-none-eabi
 
-for-cargo: ${BINDIR}/riot-expanded-headers.h
-
-${BINDIR}/riot-expanded-headers.h: ../../riot-sys/riot-all.h
-	$(Q)$(CC) $(CFLAGS_WITH_MACROS) $(INCLUDES) $< -fdirectives-only -E -o $@
-	@echo "You may now run cargo with RIOT_EXPANDED_HEADER=$@ RIOT_CFLAGS=\"${RIOT_CFLAGS}\""
-
-.PHONY: for-cargo
+.PHONY: always
 ~~~~
 
-Then, run `make for-cargo` (possibly with your `BOARD=` parameter), and prefix
-the resulting environment variables to your cargo invocations. This crate's
-build.rs script will take them up, adopt the relevant C flags, and populate the
-`riot_sys` crate with the raw bindings.
-
-Please note that riot-sys does not make any attempt to alter the Cargo target;
-it typically needs to be set to `thumbv7m-none-eabi` for ARM Cortex devices, or
-to `i686-unknown-linux-gnu` for the native board.
+(CFLAGS etc. need to be cleared, for otherwise Cargo would assume those are
+host flags.)
 
 Extension
 ---------

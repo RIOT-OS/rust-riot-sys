@@ -12,5 +12,5 @@ categories = ["external-ffi-bindings", "no-std"]
 license = "LGPL-2.1"
 
 [build-dependencies]
-bindgen = "0.40.0"
+bindgen = "0.43.2"
 shlex = "0.1.1"
