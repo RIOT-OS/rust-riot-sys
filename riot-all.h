@@ -19,3 +19,6 @@
 #include <pthread.h>
 #endif
 #include <board.h>
+#ifdef MODULE_XTIMER
+#include <xtimer.h>
+#endif
