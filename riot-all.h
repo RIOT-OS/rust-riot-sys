@@ -18,3 +18,4 @@
 // for rwlock
 #include <pthread.h>
 #endif
+#include <board.h>
