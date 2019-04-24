@@ -17,7 +17,7 @@ pub type c_ushort = u16;
 pub type c_longlong = i64;
 pub type c_ulonglong = u64;
 
-// Use core's c_void once https://github.com/rust-lang/rust/pull/53910 is merged
+// Used to be a dedicated type, pub-used to avoid breaking the API
 pub use core::ffi::c_void;
 
 /// This is a limited copy of the std::ffi:c_str::CStr struct.
