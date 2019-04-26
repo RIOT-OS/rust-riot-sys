@@ -9,6 +9,7 @@ struct timespec { char *_unknown;};
 
 #include <shell.h>
 #include <thread.h>
+#include <irq.h>
 #include <stdio_base.h>
 #include <periph/adc.h>
 #include <periph/i2c.h>
