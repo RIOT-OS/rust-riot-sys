@@ -92,7 +92,7 @@ impl CStr {
 macro_rules! cstr {
     ($s:expr) => {{
         let a = concat!($s, "\0");
-        unsafe { crate::libc::CStr::from_bytes_with_nul_unchecked(a.as_bytes()) }
+        unsafe { $crate::libc::CStr::from_bytes_with_nul_unchecked(a.as_bytes()) }
     }};
 }
 
