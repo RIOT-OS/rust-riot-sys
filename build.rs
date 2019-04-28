@@ -18,10 +18,16 @@ fn main() {
         .header("riot-all.h")
         .clang_args(cflags.iter().filter(|x| {
             match x.as_ref() {
+                // non-clang flags showing up with arm cortex m3 (eg. stk3700 board)
                 "-Werror" => false,
                 "-mno-thumb-interwork" => false,
                 "-Wformat-overflow" => false,
                 "-Wformat-truncation" => false,
+                // non-clang flags showing up for the hifive1 board
+                "-mcmodel=medlow" => false,
+                "-msmall-data-limit=8" => false,
+                "-nostartfiles" => false, // that probably shows up on arm too, but shouldn't matter
+                // accept all others
                 _ => true,
             }
         }))
