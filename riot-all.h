@@ -32,3 +32,16 @@ struct timespec { char *_unknown;};
 #ifdef MODULE_XTIMER
 #include <xtimer.h>
 #endif
+
+#ifdef MODULE_CORD_COMMON
+#include <net/cord/common.h>
+#endif
+#ifdef MODULE_CORD_EP
+#include <net/cord/ep.h>
+#endif
+#ifdef MODULE_CORD_EP_STANDALONE
+#include <net/cord/ep_standalone.h>
+#endif
+#ifdef MODULE_SOCK_UTIL
+#include <net/sock/util.h>
+#endif
