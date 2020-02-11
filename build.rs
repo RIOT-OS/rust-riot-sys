@@ -16,6 +16,7 @@ fn main() {
 
     let bindings = builder()
         .header("riot-all.h")
+        .size_t_is_usize(true)
         .clang_args(cflags.iter().filter(|x| {
             match x.as_ref() {
                 // non-clang flags showing up with arm cortex m3 (eg. stk3700 board)
