@@ -28,6 +28,8 @@ fn main() {
                 "-mcmodel=medlow" => false,
                 "-msmall-data-limit=8" => false,
                 "-nostartfiles" => false, // that probably shows up on arm too, but shouldn't matter
+                "-fno-delete-null-pointer-checks" => false, // seen on an Ubuntu 18.04
+                // and much more worries on that ubuntu ... maybe just recommend TOOLCHAIN=llvm ?
                 // accept all others
                 _ => true,
             }
