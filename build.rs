@@ -36,6 +36,7 @@ fn main() {
         .ctypes_prefix("libc")
         .impl_debug(true)
         .derive_default(true)
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
         .expect("Unable to generate bindings");
 
