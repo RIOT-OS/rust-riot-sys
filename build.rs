@@ -112,6 +112,9 @@ fn main() {
 
     rustcode = rustcode.replace("use ::libc;\n", "");
     rustcode = rustcode.replace(r#"unsafe extern "C" fn "#, r#"pub unsafe extern "C" fn "#);
+    // particular functions known to be const because they have macro equivalents as well
+    // (Probably we could remove the 'extern "C"' from all functions)
+    rustcode = rustcode.replace(r#"pub unsafe extern "C" fn mutex_init("#, r#"pub const unsafe fn mutex_init("#);
 
     let output_replaced = out_path.join("riot_c2rust_replaced.rs");
     std::fs::File::create(output_replaced)
