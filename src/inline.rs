@@ -1,3 +1,9 @@
+// While it'd be tempting to clean them all up in RIOT by a large constification haul, now is not
+// the time for that
+#![allow(unused_mut)]
+// Probably __attribute__((used)) doesn't get translated
+#![allow(unused)]
+
 /// Contains header code converted to Rust by C2Rust
 ///
 /// Types in here are distinct from those created in the main module (using bindgen); unifying
