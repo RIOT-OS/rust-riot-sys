@@ -2,6 +2,8 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
+#![feature(const_raw_ptr_deref)]
+#![feature(const_mut_refs)]
 
 pub mod libc;
 
