@@ -7,6 +7,11 @@
 struct timespec { char *_unknown;};
 #endif
 
+// Copied over from newlib's stdatomic.h -- not sure why it's not included, but
+// that's currently needed to get mutexes to build.
+#include <stdint.h>
+typedef _Atomic(int_least16_t)      atomic_int_least16_t;
+
 #include <shell.h>
 #include <thread.h>
 #include <irq.h>
