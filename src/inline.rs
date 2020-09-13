@@ -13,6 +13,9 @@
 //! Some special treatment has been applied in the course of the transpilation process:
 //!
 //! * All functions were made `pub`
+//! * All functions have their `extern "C"` removed. Any C component would already use it via their
+//!   original definitions, there is no need to re-export them or to restrain their ABI (as they
+//!   are here for efficient inlining into Rust code only).
 //! * Some functions (currently only `mutex_init`) were changed to be `const`
 //!
 // While it'd be tempting to clean them all up in RIOT by a large constification haul, now is not

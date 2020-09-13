@@ -111,7 +111,9 @@ fn main() {
         .expect("Failed to read from riot_c2rust.rs");
 
     rustcode = rustcode.replace("use ::libc;\n", "");
-    rustcode = rustcode.replace(r#"unsafe extern "C" fn "#, r#"pub unsafe extern "C" fn "#);
+    rustcode = rustcode.replace(r#"unsafe extern "C" fn "#, r#"pub unsafe fn "#);
+    // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
+    rustcode = rustcode.replace(r"pub unsafe fn _evtimer_msg_handler", r#"pub unsafe extern "C" fn _evtimer_msg_handler"#);
     // particular functions known to be const because they have macro equivalents as well
     // (Probably we could remove the 'extern "C"' from all functions)
     rustcode = rustcode.replace(r#"pub unsafe extern "C" fn mutex_init("#, r#"pub const unsafe fn mutex_init("#);
