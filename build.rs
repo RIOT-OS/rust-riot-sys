@@ -15,7 +15,7 @@ fn main() {
         .expect("Odd shell escaping in RIOT_CFLAGS");
 
     println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
-    println!("cargo:rerun-if-changed=riot-all.h");
+    println!("cargo:rerun-if-changed=riot-bindgen.h");
 
     let cflags: Vec<String> = cflags.into_iter().filter(|x| {
         match x.as_ref() {
@@ -36,7 +36,7 @@ fn main() {
     }).collect();
 
     let bindings = builder()
-        .header("riot-all.h")
+        .header("riot-bindgen.h")
         .size_t_is_usize(true)
         .clang_args(&cflags)
         .use_core()
@@ -121,7 +121,7 @@ static {type_name} init_{macro_name}(void) {{
         .expect("Failed to write to compile_commands.json");
 
     let compile_commands_name = compile_commands_name.to_str().expect("Inexpressible path name");
-    // FIXME: This does not rat on the used files. Most are probably included from riot-all.h
+    // FIXME: This does not rat on the used files. Most are probably included from riot-bindgen.h
     // anyway, tough.
     println!("Running C2Rust on {}", compile_commands_name);
     let status = std::process::Command::new("c2rust")
