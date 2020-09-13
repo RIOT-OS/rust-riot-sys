@@ -1,6 +1,7 @@
 extern crate bindgen;
 extern crate shlex;
 
+use std::fmt::Write;
 use bindgen::builder;
 use std::env;
 use std::path::PathBuf;
@@ -60,8 +61,41 @@ fn main() {
     let headercopy = out_path.join("riot-c2rust.h");
     let output = out_path.join("riot_c2rust.rs");
     println!("cargo:rerun-if-changed=riot-c2rust.h");
-    std::fs::copy("riot-c2rust.h", headercopy)
-        .expect("Failed to copy over header file");
+
+    // These constant initializers are unusable without knowledge of which type they're for; adding
+    // the information here to build explicit consts
+    let struct_initializers = [
+        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t"),
+        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t"),
+        ("MUTEX_INIT", "mutex_t"),
+    ];
+
+    let mut c_code = String::new();
+    std::fs::File::open("riot-c2rust.h")
+        .expect("Failed to open riot-c2rust.h")
+        .read_to_string(&mut c_code)
+        .expect("Failed to read riot-c2rust.h");
+
+    for (macro_name, type_name) in struct_initializers.iter() {
+        write!(c_code, r"
+
+static {type_name} init_{macro_name}(void) {{
+    {type_name} result = {macro_name};
+    return result;
+}}
+            ", type_name=type_name, macro_name=macro_name,
+            ).unwrap();
+    }
+
+    let mut outfile = std::fs::File::create(headercopy)
+        .expect("Failed to open temporary riot-c2rust.h");
+    outfile
+        .write_all(c_code.as_bytes())
+        .expect("Failed to write to riot-c2rust.h");
+    outfile
+        .sync_all()
+        .expect("failed to write to riot-c2rust.h");
+
     match std::fs::remove_file(&output) {
         Ok(_) => (),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
@@ -117,6 +151,12 @@ fn main() {
     // particular functions known to be const because they have macro equivalents as well
     // (Probably we could remove the 'extern "C"' from all functions)
     rustcode = rustcode.replace(r#"pub unsafe extern "C" fn mutex_init("#, r#"pub const unsafe fn mutex_init("#);
+
+    for (macro_name, _) in struct_initializers.iter() {
+        let search = format!(r#"pub unsafe fn init_{}"#, macro_name);
+        let replace = format!(r#"pub const fn init_{}"#, macro_name);
+        rustcode = rustcode.replace(&search, &replace);
+    }
 
     let output_replaced = out_path.join("riot_c2rust_replaced.rs");
     std::fs::File::create(output_replaced)

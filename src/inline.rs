@@ -16,7 +16,10 @@
 //! * All functions have their `extern "C"` removed. Any C component would already use it via their
 //!   original definitions, there is no need to re-export them or to restrain their ABI (as they
 //!   are here for efficient inlining into Rust code only).
-//! * Some functions (currently only `mutex_init`) were changed to be `const`
+//! * For C const initializers (eg. `#define MUTEX_INIT { { NULL } }`), there is no way for a
+//!   transpiler to recognize which type this is actually for. That information is tracked manually
+//!   in `build.rs` as a list of known initializers. They get turned into const functions in the
+//!   style of `fn init_MUTEX_INIT() -> mutex_t`.
 //!
 // While it'd be tempting to clean them all up in RIOT by a large constification haul, now is not
 // the time for that
