@@ -24,6 +24,8 @@ typedef _Atomic(int_least16_t)      atomic_int_least16_t;
 #include <net/gnrc/ipv6.h>
 #include <net/gnrc/nettype.h>
 #include <net/gnrc/netapi.h>
+#include <net/sock.h>
+#include <net/sock/udp.h>
 #ifdef MODULE_GCOAP
 #include <net/gcoap.h>
 #endif

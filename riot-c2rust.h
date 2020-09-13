@@ -19,6 +19,8 @@
 #include <net/gnrc/ipv6.h> // needs atomic hack
 #include <net/gnrc/nettype.h>
 #include <net/gnrc/netapi.h>
+#include <net/sock.h>
+#include <net/sock/udp.h>
 #ifdef MODULE_GCOAP
 #include <net/gcoap.h>
 #endif
