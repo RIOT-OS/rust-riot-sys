@@ -6,30 +6,4 @@
 // whether they do atomic stuff.
 #define _Atomic(x) x
 
-#include <shell.h>
-#include <thread.h>
-#include <irq.h>
-#include <stdio_base.h>
-#include <periph/adc.h>
-#include <periph/gpio.h>
-#include <periph/i2c.h>
-#include <net/gnrc.h> // needs atomic hack
-#include <net/gnrc/udp.h> // needs atomic hack
-#include <net/gnrc/pktbuf.h>
-#include <net/gnrc/ipv6.h> // needs atomic hack
-#include <net/gnrc/nettype.h>
-#include <net/gnrc/netapi.h>
-#include <net/sock.h>
-#include <net/sock/udp.h>
-#ifdef MODULE_GCOAP
-#include <net/gcoap.h>
-#endif
-
-#include <saul.h>
-#include <saul_reg.h>
-
-#include <board.h>
-#include <xtimer.h> // needs atomic hack
-
-// not in riot-all?
-#include <mutex.h>
+#include "riot-headers.h"

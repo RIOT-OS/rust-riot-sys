@@ -62,6 +62,9 @@ fn main() {
     let output = out_path.join("riot_c2rust.rs");
     println!("cargo:rerun-if-changed=riot-c2rust.h");
 
+    std::fs::copy("riot-headers.h", out_path.join("riot-headers.h"))
+        .expect("Failed to copy over header file");
+
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
     let struct_initializers = [
