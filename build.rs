@@ -79,9 +79,9 @@ fn main() {
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
     let struct_initializers = [
-        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t"),
-        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t"),
-        ("MUTEX_INIT", "mutex_t"),
+        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", Some("-DMODULE_SOCK")),
+        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", Some("-DMODULE_SOCK")),
+        ("MUTEX_INIT", "mutex_t", None),
     ];
 
     let mut c_code = String::new();
@@ -90,7 +90,12 @@ fn main() {
         .read_to_string(&mut c_code)
         .expect("Failed to read riot-c2rust.h");
 
-    for (macro_name, type_name) in struct_initializers.iter() {
+    for (macro_name, type_name, condition) in struct_initializers.iter() {
+        if let Some(required_module) = condition {
+            if cflags.iter().find(|i| i == required_module).is_none() {
+                continue;
+            }
+        }
         write!(c_code, r"
 
 static {type_name} init_{macro_name}(void) {{
@@ -166,7 +171,7 @@ static {type_name} init_{macro_name}(void) {{
     // (Probably we could remove the 'extern "C"' from all functions)
     rustcode = rustcode.replace(r#"pub unsafe extern "C" fn mutex_init("#, r#"pub const unsafe fn mutex_init("#);
 
-    for (macro_name, _) in struct_initializers.iter() {
+    for (macro_name, _, _) in struct_initializers.iter() {
         let search = format!(r#"pub unsafe fn init_{}"#, macro_name);
         let replace = format!(r#"pub const fn init_{}"#, macro_name);
         rustcode = rustcode.replace(&search, &replace);

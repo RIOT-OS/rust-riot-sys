@@ -71,8 +71,12 @@
 #include <net/gnrc/ipv6.h> // C2Rust: needs atomic hack
 #include <net/gnrc/nettype.h>
 #include <net/gnrc/netapi.h>
+#ifdef MODULE_SOCK
 #include <net/sock.h>
+#endif
+#ifdef MODULE_SOCK_UDP
 #include <net/sock/udp.h>
+#endif
 #ifdef MODULE_GCOAP
 #include <net/gcoap.h>
 #endif
