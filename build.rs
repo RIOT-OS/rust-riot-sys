@@ -48,7 +48,6 @@ fn main() {
 
     let bindings = builder()
         .header("riot-bindgen.h")
-        .size_t_is_usize(true)
         .clang_args(&cflags)
         .use_core()
         .ctypes_prefix("libc")
