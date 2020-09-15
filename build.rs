@@ -165,6 +165,8 @@ static {type_name} init_{macro_name}(void) {{
 
     rustcode = rustcode.replace("use ::libc;\n", "");
     rustcode = rustcode.replace(r#"unsafe extern "C" fn "#, r#"pub unsafe fn "#);
+    // This only matches when c2rust is built to even export body-less functions
+    rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
     // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
     rustcode = rustcode.replace(r"pub unsafe fn _evtimer_msg_handler", r#"pub unsafe extern "C" fn _evtimer_msg_handler"#);
     // particular functions known to be const because they have macro equivalents as well

@@ -18,6 +18,9 @@ pub type c_ushort = u16;
 pub type c_longlong = i64;
 pub type c_ulonglong = u64;
 
+pub type c_double = f64;
+pub type c_float = f32;
+
 // Used to be a dedicated type, pub-used to avoid breaking the API
 pub use core::ffi::c_void;
 

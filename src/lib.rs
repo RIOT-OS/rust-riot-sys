@@ -54,6 +54,9 @@
 #![allow(non_snake_case)]
 #![feature(const_raw_ptr_deref)]
 #![feature(const_mut_refs)]
+// when experimenting with C2Rust generated extern functions, C library fn are pulled in and they
+// have stuff like `pub type iovec`
+#![feature(extern_types)]
 
 pub mod libc;
 
