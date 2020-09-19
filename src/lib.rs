@@ -57,6 +57,8 @@
 // when experimenting with C2Rust generated extern functions, C library fn are pulled in and they
 // have stuff like `pub type iovec`
 #![feature(extern_types)]
+// eg. for irq_enable on arm
+#![feature(llvm_asm)]
 
 pub mod libc;
 

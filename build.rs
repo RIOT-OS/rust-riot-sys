@@ -191,6 +191,8 @@ static {type_name} init_{macro_name}(void) {{
     rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
     // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
     rustcode = rustcode.replace(r"pub unsafe fn _evtimer_msg_handler", r#"pub unsafe extern "C" fn _evtimer_msg_handler"#);
+    // C2Rust still generates old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
+    rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
     // particular functions known to be const because they have macro equivalents as well
     // (Probably we could remove the 'extern "C"' from all functions)
     rustcode = rustcode.replace(r#"pub unsafe extern "C" fn mutex_init("#, r#"pub const unsafe fn mutex_init("#);

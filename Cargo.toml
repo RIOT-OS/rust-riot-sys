@@ -18,6 +18,8 @@ default-target = "i686-unknown-linux-gnu"
 
 [dependencies]
 cty = "^0.2"
+# see https://github.com/immunant/c2rust/pull/307
+c2rust-asm-casts = { git = "https://github.com/chrysn-pull-requests/c2rust", branch = "nostd-c2rust-asm-casts" }
 
 [build-dependencies]
 bindgen = "0.53.1"
