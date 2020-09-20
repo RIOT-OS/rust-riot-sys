@@ -9,18 +9,23 @@ use std::path::PathBuf;
 use serde_json::json;
 
 fn main() {
-    let cflags = if let Ok(_) = std::env::var("DOCS_RS") {
+    let (cc, cflags) = if let Ok(_) = std::env::var("DOCS_RS") {
         // For docs.rs, we take this exemplary setup
         //
         // Based on the riot-examples coap build for native (aligned with Cargo.toml's
         // default-target for docs.rs), paths switched over to documentation-headers/
         // which is a headers-only full tree copy of RIOT current master branch 8b3d019d (except
         // boards and cpu keeping only native, which makes this managable in size)
-        "-DDEVELHELP -Werror -Wall -Wextra -pedantic -g3 -std=gnu11 -m32 -fstack-protector-all -ffunction-sections -fdata-sections -DDEBUG_ASSERT_VERBOSE -DRIOT_APPLICATION=\"coap_demo\" -DBOARD_NATIVE=\"native\" -DRIOT_BOARD=BOARD_NATIVE -DCPU_NATIVE=\"native\" -DRIOT_CPU=CPU_NATIVE -DMCU_NATIVE=\"native\" -DRIOT_MCU=MCU_NATIVE -fno-common -Wall -Wextra -Wmissing-include-dirs -fno-delete-null-pointer-checks -fdiagnostics-color -Wstrict-prototypes -Wold-style-definition -gz -Wformat=2 -Wformat-overflow -Wformat-truncation -DSOCK_HAS_IPV6 -DSOCK_HAS_ASYNC -DSOCK_HAS_ASYNC -DSOCK_HAS_ASYNC_CTX -DRIOT_VERSION=\"2020.10-devel-1278-g8b3d01\" -DMODULE_AUTO_INIT -DMODULE_AUTO_INIT_GNRC_IPV6 -DMODULE_AUTO_INIT_GNRC_IPV6_NIB -DMODULE_AUTO_INIT_GNRC_NETIF -DMODULE_AUTO_INIT_GNRC_PKTBUF -DMODULE_AUTO_INIT_GNRC_UDP -DMODULE_AUTO_INIT_RANDOM -DMODULE_AUTO_INIT_XTIMER -DMODULE_BOARD -DMODULE_CORE -DMODULE_CORE_IDLE_THREAD -DMODULE_CORE_INIT -DMODULE_CORE_MBOX -DMODULE_CORE_MSG -DMODULE_CORE_PANIC -DMODULE_CORE_THREAD_FLAGS -DMODULE_CPU -DMODULE_DIV -DMODULE_EVENT -DMODULE_EVENT_CALLBACK -DMODULE_EVENT_TIMEOUT -DMODULE_EVTIMER -DMODULE_FMT -DMODULE_GCOAP -DMODULE_GNRC -DMODULE_GNRC_ICMPV6 -DMODULE_GNRC_ICMPV6_ECHO -DMODULE_GNRC_IPV6 -DMODULE_GNRC_IPV6_DEFAULT -DMODULE_GNRC_IPV6_HDR -DMODULE_GNRC_IPV6_NIB -DMODULE_GNRC_NDP -DMODULE_GNRC_NETAPI -DMODULE_GNRC_NETAPI_CALLBACKS -DMODULE_GNRC_NETAPI_MBOX -DMODULE_GNRC_NETDEV_DEFAULT -DMODULE_GNRC_NETIF -DMODULE_GNRC_NETIF_ETHERNET -DMODULE_GNRC_NETIF_HDR -DMODULE_GNRC_NETIF_INIT_DEVS -DMODULE_GNRC_NETIF_IPV6 -DMODULE_GNRC_NETREG -DMODULE_GNRC_NETTYPE_ICMPV6 -DMODULE_GNRC_NETTYPE_IPV6 -DMODULE_GNRC_NETTYPE_UDP -DMODULE_GNRC_PKT -DMODULE_GNRC_PKTBUF -DMODULE_GNRC_PKTBUF_STATIC -DMODULE_GNRC_SOCK -DMODULE_GNRC_SOCK_ASYNC -DMODULE_GNRC_SOCK_UDP -DMODULE_GNRC_UDP -DMODULE_ICMPV6 -DMODULE_INET_CSUM -DMODULE_IOLIST -DMODULE_IPV6_ADDR -DMODULE_IPV6_HDR -DMODULE_L2UTIL -DMODULE_LUID -DMODULE_NANOCOAP -DMODULE_NATIVE_DRIVERS -DMODULE_NETDEV_DEFAULT -DMODULE_NETDEV_ETH -DMODULE_NETDEV_REGISTER -DMODULE_NETDEV_TAP -DMODULE_NETIF -DMODULE_PERIPH -DMODULE_PERIPH_COMMON -DMODULE_PERIPH_CPUID -DMODULE_PERIPH_GPIO -DMODULE_PERIPH_GPIO_LINUX -DMODULE_PERIPH_HWRNG -DMODULE_PERIPH_INIT -DMODULE_PERIPH_INIT_CPUID -DMODULE_PERIPH_INIT_GPIO -DMODULE_PERIPH_INIT_GPIO_LINUX -DMODULE_PERIPH_INIT_HWRNG -DMODULE_PERIPH_INIT_PM -DMODULE_PERIPH_INIT_TIMER -DMODULE_PERIPH_INIT_UART -DMODULE_PERIPH_PM -DMODULE_PERIPH_TIMER -DMODULE_PERIPH_UART -DMODULE_POSIX_HEADERS -DMODULE_POSIX_INET -DMODULE_PRNG -DMODULE_PRNG_TINYMT32 -DMODULE_PS -DMODULE_RANDOM -DMODULE_SHELL -DMODULE_SHELL_COMMANDS -DMODULE_SOCK -DMODULE_SOCK_ASYNC -DMODULE_SOCK_ASYNC_EVENT -DMODULE_SOCK_UDP -DMODULE_SOCK_UTIL -DMODULE_STDIN -DMODULE_STDIO_NATIVE -DMODULE_SYS -DMODULE_TINYMT32 -DMODULE_UDP -DMODULE_XTIMER -Idocumentation-headers/core/include -Idocumentation-headers/drivers/include -Idocumentation-headers/sys/include -Idocumentation-headers/boards/native/include -DNATIVE_INCLUDES -Idocumentation-headers/boards/native/include/ -Idocumentation-headers/core/include/ -Idocumentation-headers/drivers/include/ -Idocumentation-headers/cpu/native/include -Idocumentation-headers/sys/include -Idocumentation-headers/cpu/native/include -Idocumentation-headers/sys/net/gnrc/sock/include -Idocumentation-headers/sys/posix/include -Idocumentation-headers/sys/net/sock/async/event ".to_string()
+        ("gcc".to_string(), "-DDEVELHELP -Werror -Wall -Wextra -pedantic -g3 -std=gnu11 -m32 -fstack-protector-all -ffunction-sections -fdata-sections -DDEBUG_ASSERT_VERBOSE -DRIOT_APPLICATION=\"coap_demo\" -DBOARD_NATIVE=\"native\" -DRIOT_BOARD=BOARD_NATIVE -DCPU_NATIVE=\"native\" -DRIOT_CPU=CPU_NATIVE -DMCU_NATIVE=\"native\" -DRIOT_MCU=MCU_NATIVE -fno-common -Wall -Wextra -Wmissing-include-dirs -fno-delete-null-pointer-checks -fdiagnostics-color -Wstrict-prototypes -Wold-style-definition -gz -Wformat=2 -Wformat-overflow -Wformat-truncation -DSOCK_HAS_IPV6 -DSOCK_HAS_ASYNC -DSOCK_HAS_ASYNC -DSOCK_HAS_ASYNC_CTX -DRIOT_VERSION=\"2020.10-devel-1278-g8b3d01\" -DMODULE_AUTO_INIT -DMODULE_AUTO_INIT_GNRC_IPV6 -DMODULE_AUTO_INIT_GNRC_IPV6_NIB -DMODULE_AUTO_INIT_GNRC_NETIF -DMODULE_AUTO_INIT_GNRC_PKTBUF -DMODULE_AUTO_INIT_GNRC_UDP -DMODULE_AUTO_INIT_RANDOM -DMODULE_AUTO_INIT_XTIMER -DMODULE_BOARD -DMODULE_CORE -DMODULE_CORE_IDLE_THREAD -DMODULE_CORE_INIT -DMODULE_CORE_MBOX -DMODULE_CORE_MSG -DMODULE_CORE_PANIC -DMODULE_CORE_THREAD_FLAGS -DMODULE_CPU -DMODULE_DIV -DMODULE_EVENT -DMODULE_EVENT_CALLBACK -DMODULE_EVENT_TIMEOUT -DMODULE_EVTIMER -DMODULE_FMT -DMODULE_GCOAP -DMODULE_GNRC -DMODULE_GNRC_ICMPV6 -DMODULE_GNRC_ICMPV6_ECHO -DMODULE_GNRC_IPV6 -DMODULE_GNRC_IPV6_DEFAULT -DMODULE_GNRC_IPV6_HDR -DMODULE_GNRC_IPV6_NIB -DMODULE_GNRC_NDP -DMODULE_GNRC_NETAPI -DMODULE_GNRC_NETAPI_CALLBACKS -DMODULE_GNRC_NETAPI_MBOX -DMODULE_GNRC_NETDEV_DEFAULT -DMODULE_GNRC_NETIF -DMODULE_GNRC_NETIF_ETHERNET -DMODULE_GNRC_NETIF_HDR -DMODULE_GNRC_NETIF_INIT_DEVS -DMODULE_GNRC_NETIF_IPV6 -DMODULE_GNRC_NETREG -DMODULE_GNRC_NETTYPE_ICMPV6 -DMODULE_GNRC_NETTYPE_IPV6 -DMODULE_GNRC_NETTYPE_UDP -DMODULE_GNRC_PKT -DMODULE_GNRC_PKTBUF -DMODULE_GNRC_PKTBUF_STATIC -DMODULE_GNRC_SOCK -DMODULE_GNRC_SOCK_ASYNC -DMODULE_GNRC_SOCK_UDP -DMODULE_GNRC_UDP -DMODULE_ICMPV6 -DMODULE_INET_CSUM -DMODULE_IOLIST -DMODULE_IPV6_ADDR -DMODULE_IPV6_HDR -DMODULE_L2UTIL -DMODULE_LUID -DMODULE_NANOCOAP -DMODULE_NATIVE_DRIVERS -DMODULE_NETDEV_DEFAULT -DMODULE_NETDEV_ETH -DMODULE_NETDEV_REGISTER -DMODULE_NETDEV_TAP -DMODULE_NETIF -DMODULE_PERIPH -DMODULE_PERIPH_COMMON -DMODULE_PERIPH_CPUID -DMODULE_PERIPH_GPIO -DMODULE_PERIPH_GPIO_LINUX -DMODULE_PERIPH_HWRNG -DMODULE_PERIPH_INIT -DMODULE_PERIPH_INIT_CPUID -DMODULE_PERIPH_INIT_GPIO -DMODULE_PERIPH_INIT_GPIO_LINUX -DMODULE_PERIPH_INIT_HWRNG -DMODULE_PERIPH_INIT_PM -DMODULE_PERIPH_INIT_TIMER -DMODULE_PERIPH_INIT_UART -DMODULE_PERIPH_PM -DMODULE_PERIPH_TIMER -DMODULE_PERIPH_UART -DMODULE_POSIX_HEADERS -DMODULE_POSIX_INET -DMODULE_PRNG -DMODULE_PRNG_TINYMT32 -DMODULE_PS -DMODULE_RANDOM -DMODULE_SHELL -DMODULE_SHELL_COMMANDS -DMODULE_SOCK -DMODULE_SOCK_ASYNC -DMODULE_SOCK_ASYNC_EVENT -DMODULE_SOCK_UDP -DMODULE_SOCK_UTIL -DMODULE_STDIN -DMODULE_STDIO_NATIVE -DMODULE_SYS -DMODULE_TINYMT32 -DMODULE_UDP -DMODULE_XTIMER -Idocumentation-headers/core/include -Idocumentation-headers/drivers/include -Idocumentation-headers/sys/include -Idocumentation-headers/boards/native/include -DNATIVE_INCLUDES -Idocumentation-headers/boards/native/include/ -Idocumentation-headers/core/include/ -Idocumentation-headers/drivers/include/ -Idocumentation-headers/cpu/native/include -Idocumentation-headers/sys/include -Idocumentation-headers/cpu/native/include -Idocumentation-headers/sys/net/gnrc/sock/include -Idocumentation-headers/sys/posix/include -Idocumentation-headers/sys/net/sock/async/event ".to_string())
     } else {
-        env::var("RIOT_CFLAGS")
-            .expect("Please pass in RIOT_CFLAGS; see README.md for details.")
-            .clone()
+        (
+            env::var("RIOT_CC")
+                .expect("Please pass in RIOT_CC; see README.md for details.")
+                .clone(),
+            env::var("RIOT_CFLAGS")
+                .expect("Please pass in RIOT_CFLAGS; see README.md for details.")
+                .clone(),
+        )
     };
     let cflags = shlex::split(&cflags)
         .expect("Odd shell escaping in RIOT_CFLAGS");
@@ -69,7 +74,7 @@ fn main() {
     // a different place.
 
     let headercopy = out_path.join("riot-c2rust.h");
-    let output = out_path.join("riot_c2rust.rs");
+    let output = out_path.join("riot_c2rust_expanded.rs");
     println!("cargo:rerun-if-changed=riot-c2rust.h");
 
     std::fs::copy("riot-headers.h", out_path.join("riot-headers.h"))
@@ -105,7 +110,7 @@ static {type_name} init_{macro_name}(void) {{
             ).unwrap();
     }
 
-    let mut outfile = std::fs::File::create(headercopy)
+    let mut outfile = std::fs::File::create(&headercopy)
         .expect("Failed to open temporary riot-c2rust.h");
     outfile
         .write_all(c_code.as_bytes())
@@ -120,14 +125,32 @@ static {type_name} init_{macro_name}(void) {{
         Err(e) => panic!("Failed to remove output file: {}", e),
     }
 
+    // Run through preprocessor with platform specific arguments (cf.
+    // <https://github.com/immunant/c2rust/issues/305>)
+    let preprocessed_headercopy = out_path.join("riot-c2rust-expanded.h");
+    let clang_e_args: Vec<_> = cflags.iter().map(|s| s.clone()).chain(
+        vec!["-E", headercopy.to_str().expect("Non-string path for headercopy"),
+            "-o", preprocessed_headercopy.to_str().expect("Non-string path in preprocessed_headercopy")
+            ].drain(..)
+            .map(|x| x.to_string()),
+        ).collect();
+    let status = std::process::Command::new(cc)
+        .args(clang_e_args)
+        .status()
+        .expect("Preprocessor run failed");
+    if !status.success() {
+        println!("cargo:warning=Preprocessor failed with error code {}, exiting", status);
+        std::process::exit(status.code().unwrap_or(1));
+    }
+
     let arguments: Vec<_> = core::iter::once("any-cc".to_string())
         .chain(cflags.into_iter())
-        .chain(core::iter::once("riot-c2rust.h".to_string()))
+        .chain(core::iter::once("riot-c2rust-expanded.h".to_string()))
         .collect();
     let compile_commands = json!([{
         "arguments": arguments,
         "directory": out_path,
-        "file": "riot-c2rust.h",
+        "file": "riot-c2rust-expanded.h",
     }]);
     let compile_commands_name = out_path.join("compile_commands.json");
 

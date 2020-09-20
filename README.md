@@ -22,12 +22,15 @@ RIOT header files -- is contained in the RIOT environment variables
 `CFLAGS_WITH_MACROS` and `INCLUDES`; both need to be passed in to the Rust
 build system as a `RIOT_CFLAGS` environment variable.
 
+In addition, riot-sys also needs to know the C compiler to properly expand the
+header files before transpilation; that information is passed in `RIOT_CC`.
+
 When using riot-sys, it is usually easiest to run from a target within the Make
 system like this:
 
 ~~~~rust
 target/thumbv7m-none-eabi/debug/libmy_app.a: always
-	CC= CFLAGS= CPPFLAGS= RIOT_FLAGS="$(CFLAGS_WITH_MACROS) $(INCLUDES)" cargo build --target thumbv7m-none-eabi
+	CC= CFLAGS= CPPFLAGS= RIOT_CC="${CC}" RIOT_FLAGS="$(CFLAGS_WITH_MACROS) $(INCLUDES)" cargo build --target thumbv7m-none-eabi
 
 .PHONY: always
 ~~~~
