@@ -101,6 +101,9 @@
 #ifdef MODULE_XTIMER
 #include <xtimer.h> // C2Rust: needs atomic hack
 #endif
+#ifdef MODULE_XTIMER
+#include <ztimer.h>
+#endif
 #include <mutex.h>
 #ifdef MODULE_CORD_COMMON
 #include <net/cord/common.h>
