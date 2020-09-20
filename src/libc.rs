@@ -5,21 +5,7 @@
 
 #![allow(non_camel_case_types)]
 
-// FIXME verify these
-pub type c_int = i32;
-pub type c_uint = u32;
-pub type c_char = i8;
-pub type c_uchar = u8;
-pub type c_schar = i8;
-pub type c_long = i32;
-pub type c_ulong = u32;
-pub type c_short = i16;
-pub type c_ushort = u16;
-pub type c_longlong = i64;
-pub type c_ulonglong = u64;
-
-pub type c_double = f64;
-pub type c_float = f32;
+pub use cty::{c_int, c_uint, c_char, c_uchar, c_schar, c_long, c_ulong, c_short, c_ushort, c_longlong, c_ulonglong, c_double, c_float};
 
 // Used to be a dedicated type, pub-used to avoid breaking the API
 pub use core::ffi::c_void;

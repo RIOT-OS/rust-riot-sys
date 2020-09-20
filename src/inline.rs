@@ -27,7 +27,7 @@
 // Probably __attribute__((used)) doesn't get translated
 #![allow(unused)]
 
-use crate::libc;
+use cty as libc;
 
 mod f128 {
     extern {

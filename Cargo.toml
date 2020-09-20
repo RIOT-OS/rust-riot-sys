@@ -16,6 +16,9 @@ license = "LGPL-2.1"
 # See build.rs on docs.rs
 default-target = "i686-unknown-linux-gnu"
 
+[dependencies]
+cty = "^0.2"
+
 [build-dependencies]
 bindgen = "0.53.1"
 shlex = "0.1.1"
