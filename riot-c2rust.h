@@ -1,9 +1,19 @@
-// FIXME: This loses the atomic properties of inlined code, which is obviously bad.
+// This is currently the only relevant user of stdatomic.h. As it doesn't
+// access its relevant atomic field from static inlines (and thus from built
+// Rust) and forbids users from touching it themselves, we can work around
+// C2Rust's current inability to do atomics here
 //
 // Proper fix: resolve https://github.com/immunant/c2rust/issues/293
-//
-// Until that's done, used inline functions need to be checked manually for
-// whether they do atomic stuff.
-#define _Atomic(x) x
+#define __CLANG_STDATOMIC_H // for clang
+#define _STDATOMIC_H // for GCC
+#define _STDATOMIC_H_ // for newlib
+#define ATOMIC_VAR_INIT(x) x
+#define atomic_int_least16_t int_least16_t // FIXME is it?
+#include <rmutex.h>
+#undef __CLANG_STDATOMIC_H
+#undef _STDATOMIC_H_
+#undef _STDATOMIC_H
+#undef ATOMIC_VAR_INIT
+#undef atomic_int_least16_t
 
 #include "riot-headers.h"
