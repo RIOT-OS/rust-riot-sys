@@ -1,14 +1,3 @@
-// Rust doesn't work the same way with compilation units. The riot-sys wrapper
-// is taking responsibility for not touching anything USB related in bad ways
-// by marking everything around there as unsafe, and by introducing checks in
-// the safe wrappers.
-//
-// FIXME Should it really work that way? Could just as well make all users of
-// USB stuff feature-gated (where enabling the feature means your build system
-// has to provide proper IDs), and unless the features is activated, really
-// nothing should need usb.h.
-#define USB_H_USER_IS_RIOT_INTERNAL
-
 #include <shell.h>
 #include <thread.h>
 #include <irq.h>
@@ -69,9 +58,17 @@
 #ifdef MODULE_PERIPH_UART
 #include <periph/uart.h>
 #endif
-#ifdef MODULE_PERIPH_USBDEV
-#include <periph/usbdev.h>
-#endif
+// Disabled as it'd trigger the USB_H_USER_IS_RIOT_INTERNAL checks.
+//
+// The right way to enable it would be to add a Rust feature to riot-sys,
+// off-by-default, that an application pulls in (probably via an equivalent
+// flag in riot-wrappers) that enables access to usbdev. Once anything in the
+// dependency tree does that, that pulls the whole build into the "needs a
+// declared USB ID, and if it's only testing" territory.
+//
+// #ifdef MODULE_PERIPH_USBDEV
+// #include <periph/usbdev.h>
+// #endif
 #ifdef MODULE_PERIPH_WDT
 #include <periph/wdt.h>
 #endif
