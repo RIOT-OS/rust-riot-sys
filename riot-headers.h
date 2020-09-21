@@ -73,10 +73,10 @@
 #include <periph/wdt.h>
 #endif
 
-#include <net/gnrc.h> // C2Rust: needs atomic hack
-#include <net/gnrc/udp.h> // C2Rust: needs atomic hack
+#include <net/gnrc.h>
+#include <net/gnrc/udp.h>
 #include <net/gnrc/pktbuf.h>
-#include <net/gnrc/ipv6.h> // C2Rust: needs atomic hack
+#include <net/gnrc/ipv6.h>
 #include <net/gnrc/nettype.h>
 #include <net/gnrc/netapi.h>
 #ifdef MODULE_SOCK
@@ -96,7 +96,7 @@
 #endif
 #include <board.h>
 #ifdef MODULE_XTIMER
-#include <xtimer.h> // C2Rust: needs atomic hack
+#include <xtimer.h>
 #endif
 #ifdef MODULE_XTIMER
 #include <ztimer.h>
