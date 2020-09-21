@@ -166,7 +166,7 @@ static {type_name} init_{macro_name}(void) {{
     // anyway, tough.
     println!("Running C2Rust on {}", compile_commands_name);
     let status = std::process::Command::new("c2rust")
-        .args(&["transpile", compile_commands_name, "--preserve-unused-functions", "--emit-modules", "--emit-no-std"])
+        .args(&["transpile", compile_commands_name, "--preserve-unused-functions", "--emit-modules", "--emit-no-std", "--translate-const-macros"])
         .status()
         .expect("C2Rust failed");
     if !status.success() {
@@ -191,6 +191,8 @@ static {type_name} init_{macro_name}(void) {{
     rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
     // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
     rustcode = rustcode.replace(r"pub unsafe fn _evtimer_msg_handler", r#"pub unsafe extern "C" fn _evtimer_msg_handler"#);
+    // same problem but from C2Rust's --translate-const-macros
+    rustcode = rustcode.replace(r"pub unsafe fn __NVIC_SetPriority", r#"pub unsafe extern "C" fn __NVIC_SetPriority"#);
     // C2Rust still generates old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
     rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
     // particular functions known to be const because they have macro equivalents as well
