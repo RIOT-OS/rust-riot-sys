@@ -74,7 +74,6 @@ fn main() {
     // a different place.
 
     let headercopy = out_path.join("riot-c2rust.h");
-    let output = out_path.join("riot_c2rust_expanded.rs");
     println!("cargo:rerun-if-changed=riot-c2rust.h");
 
     std::fs::copy("riot-headers.h", out_path.join("riot-headers.h"))
@@ -119,38 +118,51 @@ static {type_name} init_{macro_name}(void) {{
         .sync_all()
         .expect("failed to write to riot-c2rust.h");
 
+    let c2rust_infile;
+    let c2rust_outfile;
+    if cc.find("clang") == None {
+        // Run through preprocessor with platform specific arguments (cf.
+        // <https://github.com/immunant/c2rust/issues/305>)
+        //
+        // This is only done for non-clang setups; those do not need it (and can profit from the
+        // unexpanded macros).
+        let preprocessed_headercopy = out_path.join("riot-c2rust-expanded.h");
+        let clang_e_args: Vec<_> = cflags.iter().map(|s| s.clone()).chain(
+            vec!["-E", headercopy.to_str().expect("Non-string path for headercopy"),
+                "-o", preprocessed_headercopy.to_str().expect("Non-string path in preprocessed_headercopy")
+                ].drain(..)
+                .map(|x| x.to_string()),
+            ).collect();
+        let status = std::process::Command::new(cc)
+            .args(clang_e_args)
+            .status()
+            .expect("Preprocessor run failed");
+        if !status.success() {
+            println!("cargo:warning=Preprocessor failed with error code {}, exiting", status);
+            std::process::exit(status.code().unwrap_or(1));
+        }
+        c2rust_infile = "riot-c2rust-expanded.h";
+        c2rust_outfile = "riot_c2rust_expanded.rs";
+    } else {
+        c2rust_infile = "riot-c2rust.h";
+        c2rust_outfile = "riot_c2rust.rs";
+    }
+
+    let output = out_path.join(c2rust_outfile);
     match std::fs::remove_file(&output) {
         Ok(_) => (),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
         Err(e) => panic!("Failed to remove output file: {}", e),
     }
 
-    // Run through preprocessor with platform specific arguments (cf.
-    // <https://github.com/immunant/c2rust/issues/305>)
-    let preprocessed_headercopy = out_path.join("riot-c2rust-expanded.h");
-    let clang_e_args: Vec<_> = cflags.iter().map(|s| s.clone()).chain(
-        vec!["-E", headercopy.to_str().expect("Non-string path for headercopy"),
-            "-o", preprocessed_headercopy.to_str().expect("Non-string path in preprocessed_headercopy")
-            ].drain(..)
-            .map(|x| x.to_string()),
-        ).collect();
-    let status = std::process::Command::new(cc)
-        .args(clang_e_args)
-        .status()
-        .expect("Preprocessor run failed");
-    if !status.success() {
-        println!("cargo:warning=Preprocessor failed with error code {}, exiting", status);
-        std::process::exit(status.code().unwrap_or(1));
-    }
-
     let arguments: Vec<_> = core::iter::once("any-cc".to_string())
         .chain(cflags.into_iter())
-        .chain(core::iter::once("riot-c2rust-expanded.h".to_string()))
+        .chain(core::iter::once(c2rust_infile.to_string()))
         .collect();
     let compile_commands = json!([{
         "arguments": arguments,
         "directory": out_path,
-        "file": "riot-c2rust-expanded.h",
+        "file": c2rust_infile,
     }]);
     let compile_commands_name = out_path.join("compile_commands.json");
 
