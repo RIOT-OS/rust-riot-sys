@@ -125,10 +125,11 @@ static {type_name} init_{macro_name}(void) {{
         // <https://github.com/immunant/c2rust/issues/305>)
         //
         // This is only done for non-clang setups; those do not need it (and can profit from the
-        // unexpanded macros).
+        // unexpanded macros). Also, clang does not have "-fdirectives-only' (but their
+        // "-frewrite-includes" might do as well if it turns out that this *is* needed even there).
         let preprocessed_headercopy = out_path.join("riot-c2rust-expanded.h");
         let clang_e_args: Vec<_> = cflags.iter().map(|s| s.clone()).chain(
-            vec!["-E", headercopy.to_str().expect("Non-string path for headercopy"),
+            vec!["-E", "-fdirectives-only", headercopy.to_str().expect("Non-string path for headercopy"),
                 "-o", preprocessed_headercopy.to_str().expect("Non-string path in preprocessed_headercopy")
                 ].drain(..)
                 .map(|x| x.to_string()),
