@@ -1,3 +1,7 @@
+// When GCC preprocesses the sources on native, it puts a __float128 into the
+// max_align_t which clang does not understand.
+#define __float128 long double
+
 // This is currently the only relevant user of stdatomic.h. As it doesn't
 // access its relevant atomic field from static inlines (and thus from built
 // Rust) and forbids users from touching it themselves, we can work around
