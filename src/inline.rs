@@ -30,7 +30,7 @@
 use cty as libc;
 
 mod f128 {
-    extern {
+    extern "C" {
         pub type f128;
     }
 }
