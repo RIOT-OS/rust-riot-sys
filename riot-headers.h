@@ -98,7 +98,7 @@
 #ifdef MODULE_XTIMER
 #include <xtimer.h>
 #endif
-#ifdef MODULE_XTIMER
+#ifdef MODULE_ZTIMER
 #include <ztimer.h>
 #endif
 #include <mutex.h>
