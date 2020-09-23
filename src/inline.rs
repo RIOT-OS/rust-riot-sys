@@ -29,6 +29,8 @@
 
 use cty as libc;
 
+use c2rust_bitfields::*;
+
 mod f128 {
     extern "C" {
         pub type f128;
