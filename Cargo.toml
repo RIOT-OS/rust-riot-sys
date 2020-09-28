@@ -12,10 +12,6 @@ keywords = ["riot", "riot-os", "iot", "bindings"]
 categories = ["external-ffi-bindings", "no-std"]
 license = "LGPL-2.1"
 
-[package.metadata.docs.rs]
-# See build.rs on docs.rs
-default-target = "i686-unknown-linux-gnu"
-
 [dependencies]
 cty = "^0.2"
 # see https://github.com/immunant/c2rust/pull/307
