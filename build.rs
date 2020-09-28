@@ -16,6 +16,7 @@ fn main() {
         .expect("Please pass in RIOT_CFLAGS; see README.md for details.");
     let cflags = shlex::split(&cflags).expect("Odd shell escaping in RIOT_CFLAGS");
 
+    println!("cargo:rerun-if-env-changed=RIOT_CC");
     println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
     println!("cargo:rerun-if-changed=riot-bindgen.h");
 
