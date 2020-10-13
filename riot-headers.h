@@ -111,6 +111,9 @@
 #ifdef MODULE_CORD_EP_STANDALONE
 #include <net/cord/ep_standalone.h>
 #endif
+#ifdef MODULE_CORD_EPSIM
+#include <net/cord/epsim.h>
+#endif
 #ifdef MODULE_SOCK_UTIL
 #include <net/sock/util.h>
 #endif
