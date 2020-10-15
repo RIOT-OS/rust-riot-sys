@@ -1,3 +1,5 @@
+<!-- WARNING: README.md is auto-generated using `cargo readme`, don't modify that file -->
+
 # {{crate}}
 
 {{readme}}
