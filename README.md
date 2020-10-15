@@ -1,3 +1,5 @@
+<!-- WARNING: README.md is auto-generated using `cargo readme`, don't modify that file -->
+
 # riot-sys
 
 ## Bindings for RIOT system calls
@@ -12,10 +14,11 @@ abstractions in the [riot-wrappers] crate are used in most applications.
 
 ### RIOT integration
 
-Both the presence of API components and the contents of structs depend on
-configuration set in the RIOT build system, eg. the presence of features or the
-CPU used. This does not only affect the preprocessed C code, but also compiler
-flags that govern the effective sizes of structs and need to be known to Cargo.
+Which functions and structs are present in this crate, and sometimes their
+details, inherently depends on the RIOT configuration this will be used with.
+For example, RIOT's `struct _thread` only has a member `name` if `DEVHELP` is
+set for a build, and its `flags` member is only present if the `thread_flags`
+module is in use.
 
 All the relevant information -- including the location of the actually used
 RIOT header files -- is contained in the RIOT environment variables
@@ -30,7 +33,7 @@ system like this:
 
 ~~~~rust
 target/thumbv7m-none-eabi/debug/libmy_app.a: always
-	CC= CFLAGS= CPPFLAGS= RIOT_CC="${CC}" RIOT_FLAGS="$(CFLAGS_WITH_MACROS) $(INCLUDES)" cargo build --target thumbv7m-none-eabi
+	CC= CFLAGS= CPPFLAGS= RIOT_CC="${CC}" RIOT_CFLAGS="$(CFLAGS_WITH_MACROS) $(INCLUDES)" cargo build --target thumbv7m-none-eabi
 
 .PHONY: always
 ~~~~
@@ -44,7 +47,7 @@ Currently, only a subset of all the RIOT headers is processed; all the relevant
 header files are included in this crate's `riot-headers.h` header file. If you
 need access to more RIOT APIs, more includes can be added there.
 
-## External build dependencies
+### External build dependencies
 
 This crate's operation depends on [C2Rust] being installed.
 As right now some of the required fixes to C2Rust are not merged upstream yet,
