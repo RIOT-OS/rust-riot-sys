@@ -21,12 +21,15 @@
 //! `CFLAGS_WITH_MACROS` and `INCLUDES`; both need to be passed in to the Rust
 //! build system as a `RIOT_CFLAGS` environment variable.
 //!
+//! In addition, riot-sys also needs to know the C compiler to properly expand the
+//! header files before transpilation; that information is passed in `RIOT_CC`.
+//!
 //! When using riot-sys, it is usually easiest to run from a target within the Make
 //! system like this:
 //!
 //! ~~~~
 //! target/thumbv7m-none-eabi/debug/libmy_app.a: always
-//! 	CC= CFLAGS= CPPFLAGS= RIOT_CFLAGS="$(CFLAGS_WITH_MACROS) $(INCLUDES)" cargo build --target thumbv7m-none-eabi
+//! 	CC= CFLAGS= CPPFLAGS= RIOT_CC="${CC}" RIOT_CFLAGS="$(CFLAGS_WITH_MACROS) $(INCLUDES)" cargo build --target thumbv7m-none-eabi
 //!
 //! .PHONY: always
 //! ~~~~
@@ -39,6 +42,21 @@
 //! Currently, only a subset of all the RIOT headers is processed; all the relevant
 //! header files are included in this crate's `riot-headers.h` header file. If you
 //! need access to more RIOT APIs, more includes can be added there.
+//!
+//! ## External build dependencies
+//!
+//! This crate's operation depends on [C2Rust] being installed.
+//! As right now some of the required fixes to C2Rust are not merged upstream yet,
+//! (and as it requires a particular nightly version),
+//! it should be installed like this:
+//!
+//!     $ git clone https://github.com/chrysn-pull-requests/c2rust/ -b for-riot
+//!     $ cd c2rust
+//!     $ rustup install nightly-2019-12-05
+//!     $ rustup component add --toolchain nightly-2019-12-05 rustfmt rustc-dev
+//!     $ cargo +nightly-2019-12-05 install --debug --path c2rust
+//!
+//! [C2Rust]: https://c2rust.com/
 //!
 //! ---
 //!
