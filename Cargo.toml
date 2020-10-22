@@ -14,8 +14,7 @@ license = "LGPL-2.1"
 
 [dependencies]
 cty = "^0.2"
-# see https://github.com/immunant/c2rust/pull/307 -- it's merged, but not published yet
-c2rust-asm-casts = { git = "https://github.com/immunant/c2rust" }
+c2rust-asm-casts = "0.2"
 # Relevant for some boards like the wemos-zero
 c2rust-bitfields = { version = "0.3", features = ["no_std"] }
 
