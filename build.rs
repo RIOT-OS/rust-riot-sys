@@ -12,14 +12,21 @@ fn main() {
     let cc = env::var("RIOT_CC")
         .expect("Please pass in RIOT_CC; see README.md for details.")
         .clone();
-    let cflags = env::var("RIOT_CFLAGS")
-        .expect("Please pass in RIOT_CFLAGS; see README.md for details.");
-    let cflags = shlex::split(&cflags).expect("Odd shell escaping in RIOT_CFLAGS");
+    let cflags =
+        env::var("RIOT_CFLAGS").expect("Please pass in RIOT_CFLAGS; see README.md for details.");
 
     println!("cargo:rerun-if-env-changed=RIOT_CC");
     println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
+
+    // pass CC and CFLAGS to dependees
+    // this requires a `links = "riot-sys"` directive in Cargo.toml.
+    // Dependees can then access these as DEP_RIOT_SYS_CC and DEP_RIOT_SYS_CFLAGS.
+    println!("cargo:CC={}", &cc);
+    println!("cargo:CFLAGS={}", &cflags);
+
     println!("cargo:rerun-if-changed=riot-bindgen.h");
 
+    let cflags = shlex::split(&cflags).expect("Odd shell escaping in RIOT_CFLAGS");
     let cflags: Vec<String> = cflags
         .into_iter()
         .filter(|x| {
