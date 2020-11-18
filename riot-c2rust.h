@@ -20,4 +20,8 @@
 #undef ATOMIC_VAR_INIT
 #undef atomic_int_least16_t
 
+// Allow header files that pull in lots of odd stuff but don't depend on
+// inlines -- like nimble's host/ble_gap.h -- to opt out of C2Rust altogether
+#define IS_C2RUST
+
 #include "riot-headers.h"

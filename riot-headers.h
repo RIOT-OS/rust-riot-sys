@@ -117,3 +117,17 @@
 #ifdef MODULE_SOCK_UTIL
 #include <net/sock/util.h>
 #endif
+
+#ifdef MODULE_NIMBLE_HOST
+#  include "host/ble_gatt.h"
+#  ifndef IS_C2RUST
+#    include "host/ble_gap.h"
+#  endif
+#  include "host/ble_hs_adv.h"
+#endif
+#ifdef MODULE_NIMBLE_SVC_GAP
+#include "services/gap/ble_svc_gap.h"
+#endif
+#ifdef MODULE_BLUETIL_AD
+#include <net/bluetil/ad.h>
+#endif
