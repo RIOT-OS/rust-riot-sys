@@ -1,6 +1,6 @@
 [package]
 name = "riot-sys"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Christian M. Amsüss <ca@etonomy.org>"]
 edition = "2018"
 
@@ -22,5 +22,5 @@ c2rust-bitfields = { version = "0.3", features = ["no_std"] }
 
 [build-dependencies]
 bindgen = "0.53.1"
-shlex = "0.1.1"
+shlex = "^1"
 serde_json = "1"
