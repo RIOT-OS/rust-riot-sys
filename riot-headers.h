@@ -131,3 +131,7 @@
 #ifdef MODULE_BLUETIL_AD
 #include <net/bluetil/ad.h>
 #endif
+
+#ifdef MODULE_SUIT_TRANSPORT
+#include "suit/transport/coap.h"
+#endif
