@@ -135,3 +135,8 @@
 #ifdef MODULE_SUIT_TRANSPORT
 #include "suit/transport/coap.h"
 #endif
+
+#ifdef MODULE_WS281X
+#include "ws281x_params.h"
+#include "ws281x.h"
+#endif
