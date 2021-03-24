@@ -76,6 +76,8 @@ fn main() {
                 "-nostartfiles" => false, // that probably shows up on arm too, but shouldn't matter
                 "-fno-delete-null-pointer-checks" => false, // seen on an Ubuntu 18.04
                 // and much more worries on that ubuntu ... maybe just recommend TOOLCHAIN=llvm ?
+                // Don't pollute the riot-sys source directory
+                "-MD" => false,
                 // accept all others
                 _ => true,
             }
