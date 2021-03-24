@@ -9,11 +9,45 @@ use std::path::PathBuf;
 use serde_json::json;
 
 fn main() {
-    let cc = env::var("RIOT_CC")
-        .expect("Please pass in RIOT_CC; see README.md for details.")
-        .clone();
-    let cflags =
-        env::var("RIOT_CFLAGS").expect("Please pass in RIOT_CFLAGS; see README.md for details.");
+    let cc;
+    let mut cflags;
+
+    if let Ok(commands_json) = env::var("RIOT_COMPILE_COMMANDS_JSON") {
+        println!("cargo:rerun-if-changed={}", commands_json);
+        let commands_file = std::fs::File::open(commands_json)
+            .expect("Failed to open RIOT_COMPILE_COMMANDS_JSON");
+
+        #[derive(Debug, serde::Deserialize)]
+        struct Entry {
+            arguments: Vec<String>,
+        }
+        let parsed: Vec<Entry> = serde_json::from_reader(commands_file)
+            .expect("Failed to parse RIOT_COMPILE_COMMANDS_JSON");
+
+        // Should we only pick the consensus set here?
+        let any = &parsed[0];
+
+        cc = any.arguments[0].clone();
+        cflags = shlex::join(any.arguments[1..]
+                             .iter()
+                             .map(|s| s.as_str())
+                             // Anything after -c is not CFLAGS but concrete input/output stuff
+                             .take_while(|&s| s != "-c")
+                             );
+
+        let usemodule = env::var("RIOT_USEMODULE")
+            .expect("RIOT_USEMODULE is required when RIOT_COMPILE_COMMANDS_JSON is given");
+        for m in usemodule.split(" ") {
+            // Hack around https://github.com/RIOT-OS/RIOT/pull/16129#issuecomment-805810090
+            write!(cflags, " -DMODULE_{}", m.to_uppercase()).unwrap();
+        }
+    } else {
+        cc = env::var("RIOT_CC")
+            .expect("Please pass in RIOT_CC; see README.md for details.")
+            .clone();
+        cflags =
+            env::var("RIOT_CFLAGS").expect("Please pass in RIOT_CFLAGS; see README.md for details.");
+    }
 
     println!("cargo:rerun-if-env-changed=RIOT_CC");
     println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");

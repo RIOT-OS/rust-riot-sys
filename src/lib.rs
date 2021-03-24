@@ -37,6 +37,19 @@
 //! (CFLAGS etc. need to be cleared, for otherwise Cargo would assume those are
 //! host flags.)
 //!
+//!
+//! The `RIOT_CC` and `RIOT_CFLAGS` are made available to dependent modules through
+//! Cargo; see [riot-wrappers]'s build.sh for an example.
+//!
+//!
+//! As an alternative to passing `RIOT_CFLAGS` and `RIOT_CC`, the path to a
+//! compile-commands.json file can be passed in `RIOT_COMPILE_COMMANDS_JSON`, with
+//! a `RIOT_USEMODULES` to go with it containing the list of used modules. The advantage of this
+//! approach is that on the RIOT side, LLVM-compativble CFLAGS are produced immaterial of which C
+//! compiler is used. Even when this alternative is used, the extracted CC and CFLAGS are still
+//! passed down to dependent crates as they were before. (The passed down CC will just always be
+//! clang).
+//!
 //! ## Extension
 //!
 //! Currently, only a subset of all the RIOT headers is processed; all the relevant
