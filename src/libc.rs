@@ -105,6 +105,8 @@ impl CStr {
     ///
     /// This indicates that the argument pointer is expected to be valid for no longer than a reference
     /// to the marker is valid, which is the duration of the f call.
+    #[deprecated(since="0.3.5", note="Not present in core_cstr or stdlib's cstr. Instead, build
+                 helpers where you have the actual lifetime to use around.")]
     pub unsafe fn from_ptr_with_lifetime<'a>(ptr: *const c_char, _marker: &'a ()) -> &'a CStr {
         CStr::from_ptr(ptr)
     }
