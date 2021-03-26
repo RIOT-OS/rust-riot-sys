@@ -15,6 +15,9 @@ pub use cty::{
 pub use core::ffi::c_void;
 
 /// This is a limited copy of the std::ffi:c_str::CStr struct.
+///
+/// When https://github.com/Amanieu/cstr_core/issues/18 is resolved, this may switch over to pub
+/// using cstr_core instead.
 pub struct CStr {
     inner: [c_char],
 }
@@ -37,6 +40,32 @@ impl CStr {
 
     pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u8]) -> &CStr {
         &*(bytes as *const [u8] as *const CStr)
+    }
+
+    /// Check in advance whether a given byte array is safe to put through
+    /// from_bytes_with_nul_unchecked.
+    ///
+    /// The function may not be overly efficient at run time (the equivalent core_cstr check around
+    /// from_bytes_with_nul uses memchr, this here may even have bounds checks), but is const and
+    /// can thus become part of the assert in the [`cstr!`] macro, which allows the compiler to do
+    /// all checks at build time.
+    ///
+    /// The result type is kept vague to not interfere with a later port to a pub export from
+    /// cstr_core where it's likely to return that crate's error type.
+    #[inline]
+    pub const fn bytes_are_valid(bytes: &[u8]) -> Result<(), impl core::any::Any> {
+        if bytes.len() == 0 || bytes[bytes.len() - 1] != 0 {
+            return Err(());
+        }
+        let mut index = 0;
+        // No for loops yet in const functions
+        while index < bytes.len() - 1 {
+            if bytes[index] == 0 {
+                return Err(());
+            }
+            index += 1;
+        }
+        Ok(())
     }
 
     pub fn as_ptr(&self) -> *const c_char {
@@ -86,6 +115,7 @@ impl CStr {
 macro_rules! cstr {
     ($s:expr) => {{
         let a = concat!($s, "\0");
+        assert!($crate::libc::CStr::bytes_are_valid(a.as_bytes()).is_ok());
         unsafe { $crate::libc::CStr::from_bytes_with_nul_unchecked(a.as_bytes()) }
     }};
 }

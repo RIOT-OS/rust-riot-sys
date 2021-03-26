@@ -91,6 +91,7 @@
 #![feature(extern_types)]
 // eg. for irq_enable on arm
 #![feature(llvm_asm)]
+#![feature(const_impl_trait)]
 
 pub mod libc;
 
