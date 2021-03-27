@@ -118,6 +118,8 @@ fn main() {
         ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t"),
         ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t"),
         ("MUTEX_INIT", "mutex_t"),
+        // neither C2Rust nor bindgen understand the cast without help
+        ("STATUS_NOT_FOUND", "thread_status_t"),
     ];
 
     let mut c_code = String::new();
