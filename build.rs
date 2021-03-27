@@ -115,9 +115,9 @@ fn main() {
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
     let struct_initializers = [
-        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", Some("-DMODULE_SOCK")),
-        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", Some("-DMODULE_SOCK")),
-        ("MUTEX_INIT", "mutex_t", None),
+        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t"),
+        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t"),
+        ("MUTEX_INIT", "mutex_t"),
     ];
 
     let mut c_code = String::new();
@@ -126,20 +126,24 @@ fn main() {
         .read_to_string(&mut c_code)
         .expect("Failed to read riot-c2rust.h");
 
-    for (macro_name, type_name, condition) in struct_initializers.iter() {
-        if let Some(required_module) = condition {
-            if cflags.iter().find(|i| i == required_module).is_none() {
-                continue;
-            }
-        }
+    for (macro_name, type_name) in struct_initializers.iter() {
+        // The ifdef guards make errors easier to spot: A "cannot find function
+        // `init_SOCK_IPV6_EP_ANY` in crate `riot_sys`" can lead one to check whether
+        // SOCK_IPV6_EP_ANY is really defined, whereas if the macro is missing, C2Rust would
+        // produce a run-time panic, and the compiler would reject that in a const function.
+        //
+        // This is more reliable than the previous approach of trying to defined a `-DSOME_MODULE`
+        // condition, also because there may not even be a module that gives a precise condition.
         write!(
             c_code,
             r"
 
+#ifdef {macro_name}
 static {type_name} init_{macro_name}(void) {{
     {type_name} result = {macro_name};
     return result;
 }}
+#endif
             ",
             type_name = type_name,
             macro_name = macro_name,
@@ -286,7 +290,7 @@ static {type_name} init_{macro_name}(void) {{
         r#"pub const unsafe fn mutex_init("#,
     );
 
-    for (macro_name, _, _) in struct_initializers.iter() {
+    for (macro_name, _) in struct_initializers.iter() {
         let search = format!(r#"pub unsafe fn init_{}"#, macro_name);
         let replace = format!(r#"pub const fn init_{}"#, macro_name);
         rustcode = rustcode.replace(&search, &replace);
