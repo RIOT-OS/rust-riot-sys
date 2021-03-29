@@ -140,3 +140,7 @@
 #include "ws281x_params.h"
 #include "ws281x.h"
 #endif
+
+#ifdef MODULE_MICROBIT
+#include "microbit.h"
+#endif
