@@ -38,7 +38,7 @@ impl CStr {
         CStr::from_bytes_with_nul_unchecked(::core::slice::from_raw_parts(ptr, len as usize + 1))
     }
 
-    pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u8]) -> &CStr {
+    pub const unsafe fn from_bytes_with_nul_unchecked(bytes: &[u8]) -> &CStr {
         &*(bytes as *const [u8] as *const CStr)
     }
 
@@ -68,7 +68,7 @@ impl CStr {
         Ok(())
     }
 
-    pub fn as_ptr(&self) -> *const c_char {
+    pub const fn as_ptr(&self) -> *const c_char {
         self.inner.as_ptr()
     }
 
