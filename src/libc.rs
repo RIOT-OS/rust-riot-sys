@@ -30,6 +30,19 @@ fn strlen(ptr: *const c_char) -> usize {
     len
 }
 
+/// The error type of conversions from [str] style types (indicating that there is an interior nul
+/// byte, or no trailing one).
+#[derive(Debug)]
+pub struct FromBytesWithNulError {
+    _private: (),
+}
+
+impl FromBytesWithNulError {
+    const fn new() -> Self {
+        Self { _private: () }
+    }
+}
+
 use core::str;
 impl CStr {
     pub unsafe fn from_ptr<'a>(ptr: *const c_char) -> &'a CStr {
@@ -49,19 +62,16 @@ impl CStr {
     /// from_bytes_with_nul uses memchr, this here may even have bounds checks), but is const and
     /// can thus become part of the assert in the [`cstr!`] macro, which allows the compiler to do
     /// all checks at build time.
-    ///
-    /// The result type is kept vague to not interfere with a later port to a pub export from
-    /// cstr_core where it's likely to return that crate's error type.
     #[inline]
-    pub const fn bytes_are_valid(bytes: &[u8]) -> Result<(), impl core::any::Any> {
+    pub const fn bytes_are_valid(bytes: &[u8]) -> Result<(), FromBytesWithNulError> {
         if bytes.len() == 0 || bytes[bytes.len() - 1] != 0 {
-            return Err(());
+            return Err(FromBytesWithNulError::new());
         }
         let mut index = 0;
         // No for loops yet in const functions
         while index < bytes.len() - 1 {
             if bytes[index] == 0 {
-                return Err(());
+                return Err(FromBytesWithNulError::new());
             }
             index += 1;
         }
