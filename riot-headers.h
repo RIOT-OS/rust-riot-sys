@@ -1,4 +1,3 @@
-#include <shell.h>
 #include <thread.h>
 #include <irq.h>
 #include <stdio_base.h>
@@ -48,6 +47,9 @@
 #endif
 #ifdef MODULE_PERIPH_RTT
 #include <periph/rtt.h>
+#endif
+#ifdef MODULE_SHELL
+#include <shell.h>
 #endif
 #ifdef MODULE_PERIPH_SPI
 #include <periph/spi.h>
