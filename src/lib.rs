@@ -101,4 +101,5 @@ pub use inline::*;
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 #[macro_use]
+#[deprecated(note="Use the cstr reexport from whatever is actually using (eg. riot-wrappers) the type instead")]
 pub use cstr_core::cstr;

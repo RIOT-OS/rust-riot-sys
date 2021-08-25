@@ -1,7 +1,11 @@
-// Taken from the no_std tests of bindgen (tests/headers/no-std.h).
-//
-// For a more correct approach, I'd probably need to take the C compiler used for RIOT into
-// account.
+//! Types used around and with the exported functions
+//!
+//! Most of this used to be explicitly defined here until definitions from other crates were taken
+//! over.
+//!
+//! The cstr exports ([CStr], [FromBytesWithNulError]) are deprecated, as they're never part of the
+//! generated -sys functions. Instead, whatever defines functions that take a cstr (e.g.
+//! `riot-wrappers`) should re-export its own cstr type.
 
 #![allow(non_camel_case_types)]
 
@@ -14,4 +18,5 @@ pub use cty::{
 // Used to be a dedicated type, pub-used to avoid breaking the API
 pub use core::ffi::c_void;
 
+#[deprecated(note="Use the cstr reexport from whatever is actually using (eg. riot-wrappers) the type instead")]
 pub use cstr_core::{CStr, FromBytesWithNulError};
