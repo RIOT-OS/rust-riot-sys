@@ -67,7 +67,7 @@
 //!     $ cd c2rust
 //!     $ rustup install nightly-2019-12-05
 //!     $ rustup component add --toolchain nightly-2019-12-05 rustfmt rustc-dev
-//!     $ cargo +nightly-2019-12-05 install --debug --path c2rust
+//!     $ cargo +nightly-2019-12-05 install --locked --debug --path c2rust
 //!
 //! [C2Rust]: https://c2rust.com/
 //!
