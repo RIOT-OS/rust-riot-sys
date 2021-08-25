@@ -302,6 +302,15 @@ static {type_name} init_{macro_name}(void) {{
         rustcode = rustcode.replace(&search, &replace);
     }
 
+    // Workaround for https://github.com/immunant/c2rust/issues/345
+    //
+    // As these are not really in the call tree of any public RIOT function, panicing probably good
+    // enough.
+    rustcode = rustcode.replace("__builtin_arm_get_fpscr()",
+            "panic!(\"fpscr could not be translated\")");
+    rustcode = rustcode.replace("__builtin_arm_set_fpscr(fpscr)",
+            "panic!(\"fpscr could not be translated\")");
+
     let output_replaced = out_path.join("riot_c2rust_replaced.rs");
     std::fs::File::create(output_replaced)
         .expect("Failed to create riot_c2rust_replaced.rs")
