@@ -278,6 +278,10 @@ static {type_name} init_{macro_name}(void) {{
         r"pub unsafe fn _evtimer_msg_handler",
         r#"pub unsafe extern "C" fn _evtimer_msg_handler"#,
     );
+    rustcode = rustcode.replace(
+        r"pub unsafe fn _evtimer_mbox_handler",
+        r#"pub unsafe extern "C" fn _evtimer_mbox_handler"#,
+    );
     // same problem but from C2Rust's --translate-const-macros
     rustcode = rustcode.replace(
         r"pub unsafe fn __NVIC_SetPriority",
