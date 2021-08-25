@@ -99,3 +99,6 @@ pub mod inline;
 pub use inline::*;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+#[macro_use]
+pub use cstr_core::cstr;

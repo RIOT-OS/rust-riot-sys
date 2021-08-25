@@ -19,6 +19,8 @@ cty = "^0.2"
 c2rust-asm-casts = "0.2"
 # Relevant for some boards like the wemos-zero
 c2rust-bitfields = { version = "0.3", features = ["no_std"] }
+# nightly is required to get the const properties that the previous own implementation had
+cstr_core = { version = "^0.2.4", default-features = false, features = [ "nightly" ] }
 
 [build-dependencies]
 bindgen = "0.53.1"
