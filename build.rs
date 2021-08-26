@@ -270,37 +270,9 @@ static {type_name} init_{macro_name}(void) {{
         .expect("Failed to read from riot_c2rust.rs");
 
     rustcode = rustcode.replace("use ::libc;\n", "");
-    rustcode = rustcode.replace(r#"unsafe extern "C" fn "#, r#"pub unsafe fn "#);
-    // This only matches when c2rust is built to even export body-less functions
-    rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
-    // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
-    rustcode = rustcode.replace(
-        r"pub unsafe fn _evtimer_msg_handler",
-        r#"pub unsafe extern "C" fn _evtimer_msg_handler"#,
-    );
-    rustcode = rustcode.replace(
-        r"pub unsafe fn _evtimer_mbox_handler",
-        r#"pub unsafe extern "C" fn _evtimer_mbox_handler"#,
-    );
-    // same problem but from C2Rust's --translate-const-macros
-    rustcode = rustcode.replace(
-        r"pub unsafe fn __NVIC_SetPriority",
-        r#"pub unsafe extern "C" fn __NVIC_SetPriority"#,
-    );
+
     // C2Rust still generates old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
     rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
-    // particular functions known to be const because they have macro equivalents as well
-    // (Probably we could remove the 'extern "C"' from all functions)
-    rustcode = rustcode.replace(
-        r#"pub unsafe extern "C" fn mutex_init("#,
-        r#"pub const unsafe fn mutex_init("#,
-    );
-
-    for (macro_name, _) in struct_initializers.iter() {
-        let search = format!(r#"pub unsafe fn init_{}"#, macro_name);
-        let replace = format!(r#"pub const fn init_{}"#, macro_name);
-        rustcode = rustcode.replace(&search, &replace);
-    }
 
     // Workaround for https://github.com/immunant/c2rust/issues/345
     //
@@ -310,6 +282,44 @@ static {type_name} init_{macro_name}(void) {{
             "panic!(\"fpscr could not be translated\")");
     rustcode = rustcode.replace("__builtin_arm_set_fpscr(fpscr)",
             "panic!(\"fpscr could not be translated\")");
+
+    // This only matches when c2rust is built to even export body-less functions
+    rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
+
+    // Replace the function declarations with ... usually something pub, but special considerations
+    // may apply
+    let mut rustcode_functionsreplaced = String::new();
+    let function_original_prefix = r#"unsafe extern "C" fn "#;
+    let mut functionchunks = rustcode.split(function_original_prefix);
+    rustcode_functionsreplaced.push_str(functionchunks.next()
+                                        .expect("Split produces at least a hit"));
+
+    for chunk in functionchunks {
+        let funcname = &chunk[..chunk.find('(').expect("Function has parentheses somewhere")];
+        let new_prefix = match funcname {
+            // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
+            "_evtimer_msg_handler" | "_evtimer_mbox_handler" => function_original_prefix,
+
+            // same problem but from C2Rust's --translate-const-macros
+            "__NVIC_SetPriority" => function_original_prefix,
+
+            // particular functions known to be const because they have macro equivalents as well
+            "mutex_init" => "pub const unsafe fn ",
+
+            // same is true for all of the struct_initializers
+            s if s.len() > 5 && &s[..5] == "init_" &&
+                struct_initializers.iter().any(|(macro_name, _)| &s[5..] == *macro_name)
+                => "pub const fn ",
+
+            // The rest we don't need to call through the extern convention, but let's please make
+            // them pub to be usable
+            _ => "pub unsafe fn ",
+        };
+        rustcode_functionsreplaced.push_str(new_prefix);
+        rustcode_functionsreplaced.push_str(chunk);
+    }
+
+    rustcode = rustcode_functionsreplaced;
 
     let output_replaced = out_path.join("riot_c2rust_replaced.rs");
     std::fs::File::create(output_replaced)
