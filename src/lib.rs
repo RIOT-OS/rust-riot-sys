@@ -92,6 +92,8 @@
 // eg. for irq_enable on arm
 #![feature(llvm_asm)]
 #![feature(const_impl_trait)]
+// Produced by c2rust for riscv32imac, eg. on hifive1 board (at least with TOOLCHAIN=llvm)
+#![feature(core_intrinsics)]
 
 pub mod libc;
 
