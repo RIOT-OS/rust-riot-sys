@@ -247,6 +247,7 @@ static {type_name} init_{macro_name}(void) {{
             "--emit-modules",
             "--emit-no-std",
             "--translate-const-macros",
+            "--fail-on-error",
         ])
         .status()
         .expect("C2Rust failed");
