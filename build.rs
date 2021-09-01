@@ -208,11 +208,6 @@ static {type_name} init_{macro_name}(void) {{
     }
 
     let output = out_path.join(c2rust_outfile);
-    match std::fs::remove_file(&output) {
-        Ok(_) => (),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
-        Err(e) => panic!("Failed to remove output file: {}", e),
-    }
 
     let arguments: Vec<_> = core::iter::once("any-cc".to_string())
         .chain(cflags.into_iter())
@@ -247,6 +242,7 @@ static {type_name} init_{macro_name}(void) {{
             "--emit-modules",
             "--emit-no-std",
             "--translate-const-macros",
+            "--overwrite-existing",
             "--fail-on-error",
         ])
         .status()
