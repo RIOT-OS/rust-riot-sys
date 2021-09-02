@@ -119,6 +119,9 @@
 #ifdef MODULE_SOCK_UTIL
 #include <net/sock/util.h>
 #endif
+#ifdef MODULEVFS
+#include <vfs.h>
+#endif
 
 #ifdef MODULE_NIMBLE_HOST
 #  include "host/ble_gatt.h"
