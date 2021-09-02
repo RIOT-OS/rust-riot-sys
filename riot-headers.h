@@ -119,8 +119,11 @@
 #ifdef MODULE_SOCK_UTIL
 #include <net/sock/util.h>
 #endif
-#ifdef MODULEVFS
+#ifdef MODULE_VFS
+#ifndef IS_C2RUST
+// Touches atomics, but we don't need macro expansions or static inlines from this one
 #include <vfs.h>
+#endif
 #endif
 
 #ifdef MODULE_NIMBLE_HOST
