@@ -272,19 +272,6 @@ static {type_name} init_{macro_name}(void) {{
     // C2Rust still generates old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
     rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
 
-    // Workaround for https://github.com/immunant/c2rust/issues/345
-    //
-    // As these are not really in the call tree of any public RIOT function, panicing probably good
-    // enough.
-    rustcode = rustcode.replace(
-        "__builtin_arm_get_fpscr()",
-        "panic!(\"fpscr could not be translated\")",
-    );
-    rustcode = rustcode.replace(
-        "__builtin_arm_set_fpscr(fpscr)",
-        "panic!(\"fpscr could not be translated\")",
-    );
-
     // This only matches when c2rust is built to even export body-less functions
     rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
 
@@ -304,6 +291,11 @@ static {type_name} init_{macro_name}(void) {{
         let new_prefix = match funcname {
             // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
             "_evtimer_msg_handler" | "_evtimer_mbox_handler" => function_original_prefix,
+
+            // Assigned by CMSIS to some const; see also riot-c2rust.h
+            "__masked_builtin_arm_get_fpscr" | "__masked_builtin_arm_set_fpscr" => {
+                function_original_prefix
+            }
 
             // same problem but from C2Rust's --translate-const-macros
             "__NVIC_SetPriority" => function_original_prefix,
