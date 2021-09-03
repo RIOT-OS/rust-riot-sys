@@ -122,6 +122,7 @@
 #ifdef MODULE_VFS
 #ifndef IS_C2RUST
 // Touches atomics, but we don't need macro expansions or static inlines from this one
+#include <fcntl.h>
 #include <vfs.h>
 #endif
 #endif
