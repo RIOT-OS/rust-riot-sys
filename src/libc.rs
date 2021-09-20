@@ -10,13 +10,26 @@
 #![allow(non_camel_case_types)]
 
 pub use cty::{
-    c_char, c_double, c_float, c_int, c_long, c_longlong, c_schar, c_short, c_uchar, c_uint,
-    c_ulong, c_ulonglong, c_ushort,
+    c_char,
+    c_double,
+    c_float,
+    c_int,
+    c_long,
+    c_longlong,
+    c_schar,
+    c_short,
+    c_uchar,
+    c_uint,
+    c_ulong,
+    c_ulonglong,
+    c_ushort,
     // Not even loading size_t and ssize_t as they don't fit with bindgen's mapping anyway
 };
 
 // Used to be a dedicated type, pub-used to avoid breaking the API
 pub use core::ffi::c_void;
 
-#[deprecated(note="Use the cstr reexport from whatever is actually using (eg. riot-wrappers) the type instead")]
+#[deprecated(
+    note = "Use the cstr reexport from whatever is actually using (eg. riot-wrappers) the type instead"
+)]
 pub use cstr_core::{CStr, FromBytesWithNulError};

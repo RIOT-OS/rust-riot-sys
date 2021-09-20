@@ -14,8 +14,8 @@ fn main() {
 
     if let Ok(commands_json) = env::var("RIOT_COMPILE_COMMANDS_JSON") {
         println!("cargo:rerun-if-changed={}", commands_json);
-        let commands_file = std::fs::File::open(commands_json)
-            .expect("Failed to open RIOT_COMPILE_COMMANDS_JSON");
+        let commands_file =
+            std::fs::File::open(commands_json).expect("Failed to open RIOT_COMPILE_COMMANDS_JSON");
 
         #[derive(Debug, serde::Deserialize)]
         struct Entry {
@@ -28,12 +28,13 @@ fn main() {
         let any = &parsed[0];
 
         cc = any.arguments[0].clone();
-        cflags = shlex::join(any.arguments[1..]
-                             .iter()
-                             .map(|s| s.as_str())
-                             // Anything after -c is not CFLAGS but concrete input/output stuff
-                             .take_while(|&s| s != "-c")
-                             );
+        cflags = shlex::join(
+            any.arguments[1..]
+                .iter()
+                .map(|s| s.as_str())
+                // Anything after -c is not CFLAGS but concrete input/output stuff
+                .take_while(|&s| s != "-c"),
+        );
 
         let usemodule = env::var("RIOT_USEMODULE")
             .expect("RIOT_USEMODULE is required when RIOT_COMPILE_COMMANDS_JSON is given");
@@ -45,8 +46,8 @@ fn main() {
         cc = env::var("RIOT_CC")
             .expect("Please pass in RIOT_CC; see README.md for details.")
             .clone();
-        cflags =
-            env::var("RIOT_CFLAGS").expect("Please pass in RIOT_CFLAGS; see README.md for details.");
+        cflags = env::var("RIOT_CFLAGS")
+            .expect("Please pass in RIOT_CFLAGS; see README.md for details.");
     }
 
     println!("cargo:rerun-if-env-changed=RIOT_CC");
@@ -275,10 +276,14 @@ static {type_name} init_{macro_name}(void) {{
     //
     // As these are not really in the call tree of any public RIOT function, panicing probably good
     // enough.
-    rustcode = rustcode.replace("__builtin_arm_get_fpscr()",
-            "panic!(\"fpscr could not be translated\")");
-    rustcode = rustcode.replace("__builtin_arm_set_fpscr(fpscr)",
-            "panic!(\"fpscr could not be translated\")");
+    rustcode = rustcode.replace(
+        "__builtin_arm_get_fpscr()",
+        "panic!(\"fpscr could not be translated\")",
+    );
+    rustcode = rustcode.replace(
+        "__builtin_arm_set_fpscr(fpscr)",
+        "panic!(\"fpscr could not be translated\")",
+    );
 
     // This only matches when c2rust is built to even export body-less functions
     rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
@@ -288,8 +293,11 @@ static {type_name} init_{macro_name}(void) {{
     let mut rustcode_functionsreplaced = String::new();
     let function_original_prefix = r#"unsafe extern "C" fn "#;
     let mut functionchunks = rustcode.split(function_original_prefix);
-    rustcode_functionsreplaced.push_str(functionchunks.next()
-                                        .expect("Split produces at least a hit"));
+    rustcode_functionsreplaced.push_str(
+        functionchunks
+            .next()
+            .expect("Split produces at least a hit"),
+    );
 
     for chunk in functionchunks {
         let funcname = &chunk[..chunk.find('(').expect("Function has parentheses somewhere")];
@@ -301,12 +309,19 @@ static {type_name} init_{macro_name}(void) {{
             "__NVIC_SetPriority" => function_original_prefix,
 
             // particular functions known to be const because they have macro equivalents as well
-            "mutex_init" => "#[deprecated(note = \"Use init_MUTEX_INIT instead\")]\npub const unsafe fn ",
+            "mutex_init" => {
+                "#[deprecated(note = \"Use init_MUTEX_INIT instead\")]\npub const unsafe fn "
+            }
 
             // same is true for all of the struct_initializers
-            s if s.len() > 5 && &s[..5] == "init_" &&
-                struct_initializers.iter().any(|(macro_name, _)| &s[5..] == *macro_name)
-                => "pub const fn ",
+            s if s.len() > 5
+                && &s[..5] == "init_"
+                && struct_initializers
+                    .iter()
+                    .any(|(macro_name, _)| &s[5..] == *macro_name) =>
+            {
+                "pub const fn "
+            }
 
             // The rest we don't need to call through the extern convention, but let's please make
             // them pub to be usable
