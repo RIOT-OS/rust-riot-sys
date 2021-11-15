@@ -13,6 +13,7 @@ fn main() {
     let mut cflags;
 
     if let Ok(commands_json) = env::var("RIOT_COMPILE_COMMANDS_JSON") {
+        println!("cargo:rerun-if-env-changed=RIOT_COMPILE_COMMANDS_JSON");
         println!("cargo:rerun-if-changed={}", commands_json);
         let commands_file =
             std::fs::File::open(commands_json).expect("Failed to open RIOT_COMPILE_COMMANDS_JSON");
@@ -36,6 +37,7 @@ fn main() {
                 .take_while(|&s| s != "-c"),
         );
 
+        println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
         let usemodule = env::var("RIOT_USEMODULE")
             .expect("RIOT_USEMODULE is required when RIOT_COMPILE_COMMANDS_JSON is given");
         for m in usemodule.split(" ") {
