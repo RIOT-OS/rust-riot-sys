@@ -44,6 +44,15 @@ static inline void __masked_builtin_arm_set_fpscr(int){
 #undef ATOMIC_VAR_INIT
 #undef atomic_int_least16_t
 
+// This workaround is due to the combination of `pub use inline::*` and
+// `include(...bindings.rs)`: the former defines GCLK as a constant, and when
+// the latter uses it in a variable or parameter name, it is interpreted as a
+// constant pattern.
+//
+// The long-term fix is to do better on the merging between C2Rust and bindgen
+// stuff, but the short fix is to just rename it.
+#define GCLK GLOBAL_GCLK
+
 // Allow header files that pull in lots of odd stuff but don't depend on
 // inlines -- like nimble's host/ble_gap.h -- to opt out of C2Rust altogether
 #define IS_C2RUST
