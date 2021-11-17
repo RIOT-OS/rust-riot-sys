@@ -21,7 +21,8 @@
 static inline int __masked_builtin_arm_get_fpscr(void) {
 	abort();
 }
-static inline void __masked_builtin_arm_set_fpscr(int){
+static inline void __masked_builtin_arm_set_fpscr(int fpscr){
+	(void)fpscr;
 	abort();
 }
 #endif

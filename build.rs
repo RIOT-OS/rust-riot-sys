@@ -151,7 +151,7 @@ fn main() {
             r"
 
 #ifdef {macro_name}
-static {type_name} init_{macro_name}(void) {{
+{type_name} init_{macro_name}(void) {{
     {type_name} result = {macro_name};
     return result;
 }}
@@ -318,14 +318,15 @@ static {type_name} init_{macro_name}(void) {{
             // same problem but from C2Rust's --translate-const-macros
             "__NVIC_SetPriority" => function_original_prefix,
 
-            // same is true for all of the struct_initializers
+            // As below (no need for extern), and they are const by construction.
             s if s.len() > 5
                 && &s[..5] == "init_"
                 && struct_initializers
                     .iter()
                     .any(|(macro_name, _)| &s[5..] == *macro_name) =>
             {
-                "pub const fn "
+                // No "pub" because that's already a "pub" in front of it, they were never static
+                "const fn "
             }
 
             // The rest we don't need to call through the extern convention, but let's please make
