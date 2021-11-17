@@ -302,11 +302,6 @@ static {type_name} init_{macro_name}(void) {{
             // same problem but from C2Rust's --translate-const-macros
             "__NVIC_SetPriority" => function_original_prefix,
 
-            // particular functions known to be const because they have macro equivalents as well
-            "mutex_init" => {
-                "#[deprecated(note = \"Use init_MUTEX_INIT instead\")]\npub const unsafe fn "
-            }
-
             // same is true for all of the struct_initializers
             s if s.len() > 5
                 && &s[..5] == "init_"
