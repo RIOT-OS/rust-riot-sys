@@ -42,7 +42,14 @@ fn main() {
             .expect("RIOT_USEMODULE is required when RIOT_COMPILE_COMMANDS_JSON is given");
         for m in usemodule.split(" ") {
             // Hack around https://github.com/RIOT-OS/RIOT/pull/16129#issuecomment-805810090
-            write!(cflags, " -DMODULE_{}", m.to_uppercase()).unwrap();
+            write!(
+                cflags,
+                " -DMODULE_{}",
+                m.to_uppercase()
+                    // avoid producing MODULE_BOARDS_COMMON_SAMDX1-ARDUINO-BOOTLOADER
+                    .replace('-', "_")
+            )
+            .unwrap();
         }
     } else {
         cc = env::var("RIOT_CC")
