@@ -290,8 +290,13 @@ fn main() {
     //
     // This is needed, for example, on the adafruit-itsybitsy-m4 board with the riot-hello-world
     // example.
+    //
+    // Likewise, the SERCOM constants are set by the samr30-xpro board.
     let gclk_word = regex::Regex::new(r"\bGCLK\b").expect("Invalid static regular expression");
     rustcode = gclk_word.replace_all(&rustcode, "GLOBAL_GCLK").to_string();
+    let sercom_word =
+        regex::Regex::new(r"\bSERCOM[0-9]\b").expect("Invalid static regular expression");
+    rustcode = sercom_word.replace_all(&rustcode, "GLOBAL_$0").to_string();
 
     // Replace the function declarations with ... usually something pub, but special considerations
     // may apply
