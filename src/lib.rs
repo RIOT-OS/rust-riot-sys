@@ -84,14 +84,11 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-#![feature(const_raw_ptr_deref)]
-#![feature(const_mut_refs)]
 // when experimenting with C2Rust generated extern functions, C library fn are pulled in and they
 // have stuff like `pub type iovec`
 #![feature(extern_types)]
 // eg. for irq_enable on arm
 #![feature(llvm_asm)]
-#![feature(const_impl_trait)]
 // Produced by c2rust for riscv32imac, eg. on hifive1 board (at least with TOOLCHAIN=llvm)
 #![feature(core_intrinsics)]
 
