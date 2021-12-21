@@ -103,6 +103,9 @@
 #ifdef MODULE_ZTIMER
 #include <ztimer.h>
 #endif
+#ifdef MODULE_ZTIMER_PERIODIC
+#include <ztimer/periodic.h>
+#endif
 #include <mutex.h>
 #ifdef MODULE_CORD_COMMON
 #include <net/cord/common.h>
