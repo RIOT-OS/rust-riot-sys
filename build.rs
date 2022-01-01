@@ -124,12 +124,12 @@ fn main() {
 
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
-    let struct_initializers = [
-        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t"),
-        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t"),
-        ("MUTEX_INIT", "mutex_t"),
+    let macro_functions = [
+        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", "void"),
+        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", "void"),
+        ("MUTEX_INIT", "mutex_t", "void"),
         // neither C2Rust nor bindgen understand the cast without help
-        ("STATUS_NOT_FOUND", "thread_status_t"),
+        ("STATUS_NOT_FOUND", "thread_status_t", "void"),
     ];
 
     let mut c_code = String::new();
@@ -138,7 +138,7 @@ fn main() {
         .read_to_string(&mut c_code)
         .expect("Failed to read riot-c2rust.h");
 
-    for (macro_name, type_name) in struct_initializers.iter() {
+    for (macro_name, return_type, args) in macro_functions.iter() {
         // The ifdef guards make errors easier to spot: A "cannot find function
         // `init_SOCK_IPV6_EP_ANY` in crate `riot_sys`" can lead one to check whether
         // SOCK_IPV6_EP_ANY is really defined, whereas if the macro is missing, C2Rust would
@@ -151,14 +151,15 @@ fn main() {
             r"
 
 #ifdef {macro_name}
-{type_name} init_{macro_name}(void) {{
-    {type_name} result = {macro_name};
+{return_type} init_{macro_name}({args}) {{
+    {return_type} result = {macro_name};
     return result;
 }}
 #endif
             ",
-            type_name = type_name,
+            return_type = return_type,
             macro_name = macro_name,
+            args = args,
         )
         .unwrap();
     }
@@ -326,9 +327,9 @@ fn main() {
             // As below (no need for extern), and they are const by construction.
             s if s.len() > 5
                 && &s[..5] == "init_"
-                && struct_initializers
+                && macro_functions
                     .iter()
-                    .any(|(macro_name, _)| &s[5..] == *macro_name) =>
+                    .any(|(macro_name, _, _)| &s[5..] == *macro_name) =>
             {
                 // No "pub" because that's already a "pub" in front of it, they were never static
                 "const fn "
