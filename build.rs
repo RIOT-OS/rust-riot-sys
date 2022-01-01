@@ -124,22 +124,27 @@ fn main() {
 
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
-    let macro_functions = [
+    let mut macro_functions = [
         ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", "void", true),
         ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", "void", true),
         ("MUTEX_INIT", "mutex_t", "void", true),
         // neither C2Rust nor bindgen understand the cast without help
         ("STATUS_NOT_FOUND", "thread_status_t", "void", true),
-        ("LED0_ON", "void", "void", false),
-        ("LED0_OFF", "void", "void", false),
-        ("LED0_TOGGLE", "void", "void", false),
-        ("LED1_ON", "void", "void", false),
-        ("LED1_OFF", "void", "void", false),
-        ("LED1_TOGGLE", "void", "void", false),
         // If any board is ever added that works completely differently, this'll have to go behind
         // a feature-gate
         ("GPIO_PIN", "gpio_t", "unsigned port, unsigned pin", true),
     ];
+    let mut macro_functions: Vec<_> = macro_functions
+        .iter()
+        .map(|(macro_name, return_type, args, is_const)| {
+            (macro_name.to_string(), *return_type, *args, *is_const)
+        })
+        .collect();
+    for i in 0..8 {
+        macro_functions.push((format!("LED{}_ON", i), "void", "void", false));
+        macro_functions.push((format!("LED{}_OFF", i), "void", "void", false));
+        macro_functions.push((format!("LED{}_TOGGLE", i), "void", "void", false));
+    }
 
     let mut c_code = String::new();
     std::fs::File::open("riot-c2rust.h")
