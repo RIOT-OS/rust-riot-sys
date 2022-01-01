@@ -155,3 +155,8 @@
 #ifdef MODULE_MICROBIT
 #include "microbit.h"
 #endif
+
+// Note that while the actual definitions are always in board.h, this defines
+// the fallback macros that make sure that in the LED macros' absence,
+// fallbacks are there.
+#include <led.h>
