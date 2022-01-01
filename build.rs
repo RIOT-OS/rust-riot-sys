@@ -125,11 +125,20 @@ fn main() {
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
     let macro_functions = [
-        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", "void"),
-        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", "void"),
-        ("MUTEX_INIT", "mutex_t", "void"),
+        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", "void", true),
+        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", "void", true),
+        ("MUTEX_INIT", "mutex_t", "void", true),
         // neither C2Rust nor bindgen understand the cast without help
-        ("STATUS_NOT_FOUND", "thread_status_t", "void"),
+        ("STATUS_NOT_FOUND", "thread_status_t", "void", true),
+        ("LED0_ON", "void", "void", false),
+        ("LED0_OFF", "void", "void", false),
+        ("LED0_TOGGLE", "void", "void", false),
+        ("LED1_ON", "void", "void", false),
+        ("LED1_OFF", "void", "void", false),
+        ("LED1_TOGGLE", "void", "void", false),
+        // If any board is ever added that works completely differently, this'll have to go behind
+        // a feature-gate
+        ("GPIO_PIN", "gpio_t", "unsigned port, unsigned pin", true),
     ];
 
     let mut c_code = String::new();
@@ -138,7 +147,8 @@ fn main() {
         .read_to_string(&mut c_code)
         .expect("Failed to read riot-c2rust.h");
 
-    for (macro_name, return_type, args) in macro_functions.iter() {
+    // FIXME: Rename from init_ to macro_
+    for (macro_name, return_type, args, _is_const) in macro_functions.iter() {
         // The ifdef guards make errors easier to spot: A "cannot find function
         // `init_SOCK_IPV6_EP_ANY` in crate `riot_sys`" can lead one to check whether
         // SOCK_IPV6_EP_ANY is really defined, whereas if the macro is missing, C2Rust would
@@ -146,9 +156,26 @@ fn main() {
         //
         // This is more reliable than the previous approach of trying to defined a `-DSOME_MODULE`
         // condition, also because there may not even be a module that gives a precise condition.
-        write!(
-            c_code,
-            r"
+        if *return_type == "void" {
+            // in C, assigning and returning void is special
+            write!(
+                c_code,
+                r"
+
+#ifdef {macro_name}
+{return_type} init_{macro_name}({args}) {{
+    {macro_name};
+}}
+#endif
+                ",
+                return_type = return_type,
+                macro_name = macro_name,
+                args = args,
+            )
+        } else {
+            write!(
+                c_code,
+                r"
 
 #ifdef {macro_name}
 {return_type} init_{macro_name}({args}) {{
@@ -156,11 +183,12 @@ fn main() {
     return result;
 }}
 #endif
-            ",
-            return_type = return_type,
-            macro_name = macro_name,
-            args = args,
-        )
+                ",
+                return_type = return_type,
+                macro_name = macro_name,
+                args = args,
+            )
+        }
         .unwrap();
     }
 
@@ -312,27 +340,37 @@ fn main() {
 
     for chunk in functionchunks {
         let funcname = &chunk[..chunk.find('(').expect("Function has parentheses somewhere")];
-        let new_prefix = match funcname {
+        let macro_details = if funcname.len() > 5 && &funcname[..5] == "init_" {
+            macro_functions
+                .iter()
+                .filter(|(macro_name, _, _, _)| &funcname[5..] == *macro_name)
+                .next()
+        } else {
+            None
+        };
+        let new_prefix = match (funcname, macro_details) {
             // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
-            "_evtimer_msg_handler" | "_evtimer_mbox_handler" => function_original_prefix,
+            ("_evtimer_msg_handler" | "_evtimer_mbox_handler", _) => function_original_prefix,
 
             // Assigned by CMSIS to some const; see also riot-c2rust.h
-            "__masked_builtin_arm_get_fpscr" | "__masked_builtin_arm_set_fpscr" => {
+            ("__masked_builtin_arm_get_fpscr" | "__masked_builtin_arm_set_fpscr", _) => {
                 function_original_prefix
             }
 
             // same problem but from C2Rust's --translate-const-macros
-            "__NVIC_SetPriority" => function_original_prefix,
+            ("__NVIC_SetPriority", _) => function_original_prefix,
 
-            // As below (no need for extern), and they are const by construction.
-            s if s.len() > 5
-                && &s[..5] == "init_"
-                && macro_functions
-                    .iter()
-                    .any(|(macro_name, _, _)| &s[5..] == *macro_name) =>
-            {
+            // As below (no need for extern), and they are const as declared ni the macro_functions
+            // list.
+            (_, Some((_, _, _, is_const))) => {
                 // No "pub" because that's already a "pub" in front of it, they were never static
-                "const fn "
+                match is_const {
+                    // FIXME: These should be unsafe -- just because most of them are const doesn't
+                    // necessrily mean they're safe (just the first few happened to be, but that's
+                    // not this crate's place to assert)
+                    true => "const fn ",
+                    false => "unsafe fn ",
+                }
             }
 
             // The rest we don't need to call through the extern convention, but let's please make
