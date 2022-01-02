@@ -84,6 +84,9 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
+// C2Rust and bindgen disagree on many types (because they have independent structs). This is
+// acceptable here, where the later (from bindgen) wins.
+#![allow(clashing_extern_declarations)]
 // when experimenting with C2Rust generated extern functions, C library fn are pulled in and they
 // have stuff like `pub type iovec`
 #![feature(extern_types)]
