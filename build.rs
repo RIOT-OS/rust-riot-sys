@@ -124,7 +124,7 @@ fn main() {
 
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
-    let mut macro_functions = [
+    let macro_functions = [
         ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", "void", true),
         ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", "void", true),
         ("MUTEX_INIT", "mutex_t", "void", true),
@@ -152,10 +152,9 @@ fn main() {
         .read_to_string(&mut c_code)
         .expect("Failed to read riot-c2rust.h");
 
-    // FIXME: Rename from init_ to macro_
     for (macro_name, return_type, args, _is_const) in macro_functions.iter() {
         // The ifdef guards make errors easier to spot: A "cannot find function
-        // `init_SOCK_IPV6_EP_ANY` in crate `riot_sys`" can lead one to check whether
+        // `macro_SOCK_IPV6_EP_ANY` in crate `riot_sys`" can lead one to check whether
         // SOCK_IPV6_EP_ANY is really defined, whereas if the macro is missing, C2Rust would
         // produce a run-time panic, and the compiler would reject that in a const function.
         //
@@ -168,7 +167,7 @@ fn main() {
                 r"
 
 #ifdef {macro_name}
-{return_type} init_{macro_name}({args}) {{
+{return_type} macro_{macro_name}({args}) {{
     {macro_name};
 }}
 #endif
@@ -183,7 +182,7 @@ fn main() {
                 r"
 
 #ifdef {macro_name}
-{return_type} init_{macro_name}({args}) {{
+{return_type} macro_{macro_name}({args}) {{
     {return_type} result = {macro_name};
     return result;
 }}
@@ -345,10 +344,10 @@ fn main() {
 
     for chunk in functionchunks {
         let funcname = &chunk[..chunk.find('(').expect("Function has parentheses somewhere")];
-        let macro_details = if funcname.len() > 5 && &funcname[..5] == "init_" {
+        let macro_details = if funcname.len() > 5 && &funcname[..6] == "macro_" {
             macro_functions
                 .iter()
-                .filter(|(macro_name, _, _, _)| &funcname[5..] == *macro_name)
+                .filter(|(macro_name, _, _, _)| &funcname[6..] == *macro_name)
                 .next()
         } else {
             None
@@ -373,7 +372,7 @@ fn main() {
                     // FIXME: These should be unsafe -- just because most of them are const doesn't
                     // necessrily mean they're safe (just the first few happened to be, but that's
                     // not this crate's place to assert)
-                    true => "const fn ",
+                    true => "const unsafe fn ",
                     false => "unsafe fn ",
                 }
             }
