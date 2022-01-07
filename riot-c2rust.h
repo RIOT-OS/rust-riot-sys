@@ -148,4 +148,18 @@ static inline void __masked_builtin_arm_set_fpscr(int fpscr){
 // inlines -- like nimble's host/ble_gap.h -- to opt out of C2Rust altogether
 #define IS_C2RUST
 
+// These would create constants that later in the bindgen code upset things by
+// becoming part of `let GPIO_OUT: u32 = ` statements that are then interpreted
+// as pattern matchings. This happens for examples on the rpi-pico in the
+// generated bitfield functions for SIO_Type on the bindgen side. (And the
+// GPIO_{IN,OUT} values are usable preferredly through bindgen as
+// gpio_mode_t_GPIO_IN & co).
+//
+// The better long-term workaround will be to not *-use the c2rust bindings in
+// lib.rs.
+#undef GPIO_OUT
+#define GPIO_OUT c2rust can not understand this and will thus ignore it
+#undef GPIO_IN
+#define GPIO_IN c2rust can not understand this and will thus ignore it
+
 #include "riot-headers.h"
