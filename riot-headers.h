@@ -75,17 +75,26 @@
 #include <periph/wdt.h>
 #endif
 
+#ifdef MODULE_CORE_THREAD_FLAGS
+#include <thread_flags.h>
+#endif
 #include <net/gnrc.h>
 #include <net/gnrc/udp.h>
 #include <net/gnrc/pktbuf.h>
 #include <net/gnrc/ipv6.h>
 #include <net/gnrc/nettype.h>
 #include <net/gnrc/netapi.h>
+#ifdef MODULE_GNRC_ICMPV6
+#include "net/gnrc/icmpv6.h"
+#endif
 #ifdef MODULE_SOCK
 #include <net/sock.h>
 #endif
 #ifdef MODULE_SOCK_UDP
 #include <net/sock/udp.h>
+#endif
+#ifdef MODULE_SOCK_ASYNC
+#include <net/sock/async.h>
 #endif
 #ifdef MODULE_GCOAP
 #include <net/gcoap.h>
