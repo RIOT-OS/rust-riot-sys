@@ -392,4 +392,57 @@ fn main() {
         .expect("Failed to create riot_c2rust_replaced.rs")
         .write(rustcode.as_bytes())
         .expect("Failed to write to riot_c2rust_replaced.rs");
+
+    // Pub uses of inline right into the main lib.rs
+    //
+    // This is primarily for things that can really come from either backend (eg. irq functions
+    // that are regular on native but static inline on others), and for convenience stuff like
+    // macro_.
+    //
+    // Some functions are also in because they're innocuous enough.
+    let mut toplevel_from_inline: Vec<String> = [
+        "bluetil_ad_add_flags",
+        "coap_get_code_raw",
+        "coap_get_total_hdr_len",
+        "gnrc_netapi_dispatch_send",
+        "gnrc_netif_ipv6_addrs_get",
+        "gnrc_netreg_entry_init_pid",
+        "gpio_is_valid",
+        "irq_disable",
+        "irq_is_enabled",
+        "irq_is_in",
+        "irq_restore",
+        "mutex_trylock",
+        "pid_is_valid",
+        "shell_run_forever",
+        "sock_udp_recv",
+        "sock_udp_send",
+        "thread_get",
+        "thread_getpid",
+        "thread_get_unchecked",
+        "ztimer_spin",
+    ]
+    .iter()
+    .map(|name| name.to_string())
+    .collect();
+    for (macro_name, _, _, _) in macro_functions.iter() {
+        toplevel_from_inline.push(format!("macro_{}", macro_name));
+    }
+    let toplevel_from_inline: Vec<String> = toplevel_from_inline
+        .drain(..)
+        .filter(|s: &String| rustcode.contains(s))
+        .collect();
+    let toplevel_from_inline_filename = out_path.join("toplevel_from_inline.rs");
+    std::fs::File::create(toplevel_from_inline_filename)
+        .expect("Failed to create toplevel_from_inline.rs")
+        .write(
+            format!(
+                "
+               pub use inline::{{ {} }};
+           ",
+                toplevel_from_inline.join(",\n")
+            )
+            .as_bytes(),
+        )
+        .expect("Failed to write to toplevel_from_inline.rs");
 }
