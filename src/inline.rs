@@ -26,6 +26,8 @@
 #![allow(unused_mut)]
 // Probably __attribute__((used)) doesn't get translated
 #![allow(unused)]
+// Would be nice if we could only do that for `llvm_asm`
+#![allow(deprecated)]
 
 use cty as libc;
 
