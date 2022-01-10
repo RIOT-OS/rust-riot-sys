@@ -1,0 +1,13 @@
+test:nightly:
+  image: riot/riotbuild
+  script:
+  - "if [ -e RIOT ]; then (cd RIOT; git pull); else git clone https://github.com/RIOT-OS/RIOT; fi"
+  - "(cd RIOT && git reset --hard)"
+  - "for FILE in RIOT/{examples/rust-{hello-world,gcoap},tests/rust_minimal}/Cargo.toml; do echo '[patch.crates-io]' >> $FILE; echo 'riot-sys = { path = \"../../../\" }' >> $FILE; done"
+  - "make -C RIOT/examples/rust-hello-world BOARDS='native sltb001a samr21-xpro' buildtest"
+  - "make -C RIOT/examples/rust-gcoap BOARDS='native sltb001a samr21-xpro' buildtest"
+  - "make -C RIOT/tests/rust_minimal BOARDS='native sltb001a samr21-xpro' buildtest"
+  cache:
+    paths:
+      - .cargo/
+      - RIOT
