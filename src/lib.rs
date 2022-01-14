@@ -87,8 +87,6 @@
 // when experimenting with C2Rust generated extern functions, C library fn are pulled in and they
 // have stuff like `pub type iovec`
 #![feature(extern_types)]
-// eg. for irq_enable on arm
-#![feature(llvm_asm)]
 // Produced by c2rust for riscv32imac, eg. on hifive1 board (at least with TOOLCHAIN=llvm)
 #![feature(core_intrinsics)]
 // Produced in const functions on the rpi-pico and ek-lm4f120xl boards, eg. when casting around

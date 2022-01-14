@@ -26,8 +26,40 @@
 #![allow(unused_mut)]
 // Probably __attribute__((used)) doesn't get translated
 #![allow(unused)]
-// Would be nice if we could only do that for `llvm_asm`
-#![allow(deprecated)]
+
+extern "C" {
+    fn llvm_asm_is_not_supported_any_more();
+}
+
+macro_rules! llvm_asm {
+    // They can probably be deduplicated (eg. around known strings like "cpsid i" and "cpsie i"
+    // that all just need to be passed on, or by the MSR/MRS generalizing over the service registe)
+    // -- but that requires advanced macro magic, and for the current number this does fine. The
+    // "memory" clobber is probably just a pessimistic assumption (none of the operation appears to
+    // actually clobber anything). Unlike in LLVM, new assembly being volatile is default in new
+    // asm (as it's not marked pure, IIUC).
+    ("MRS $0, ipsr" : "=r" ($result:ident) : : : "volatile") => {
+        core::arch::asm!("MRS {}, ipsr", out(reg) $result);
+    };
+    // (The following are typically found in programs that use riot_wrappers::interrupt::free or
+    // anyting else that toggles interrupts).
+    ("MRS $0, primask" : "=r" ($result:ident) : : "memory" : "volatile") => {
+        core::arch::asm!("MRS {}, primask", out(reg) $result);
+    };
+    ("MSR primask, $0" : : "r" ($primask_in:ident) : "memory" : "volatile") => {
+        core::arch::asm!("MSR primask, {}", in(reg) $primask_in);
+    };
+    ("cpsid i" : : : "memory" : "volatile") => {
+        core::arch::asm!("cpsid i");
+    };
+    ("cpsie i" : : : "memory" : "volatile") => {
+        core::arch::asm!("cpsie i");
+    };
+    ($($x:tt)*) => {{
+        llvm_asm_is_not_supported_any_more();
+        unreachable!()
+    }};
+}
 
 use cty as libc;
 
