@@ -5,13 +5,15 @@ test:nightly:
   - "cd RIOT"
   - "git reset --hard"
   - "DIRS='examples/rust-hello-world examples/rust-gcoap tests/rust_minimal'"
+  # Updating riot-sys and riot-wrappers in case the riot-wrappers in published
+  # RIOT are so old they won't use the latest riot-sys
   - "
     for D in ${DIRS}; do
       cd ${D};
       echo '=== TESTING' ${D};
       echo '[patch.crates-io]' >> Cargo.toml;
       echo 'riot-sys = { path = \"../../../\", version = \"*\" }' >> Cargo.toml;
-      cargo update --package riot-sys;
+      cargo update -p riot-sys -p riot-wrappers;
       cargo tree;
       make BOARDS='native sltb001a samr21-xpro' buildtest;
       cd ../..;
