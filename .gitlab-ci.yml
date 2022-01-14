@@ -8,6 +8,7 @@ test:nightly:
   # Updating riot-sys and riot-wrappers in case the riot-wrappers in published
   # RIOT are so old they won't use the latest riot-sys
   - "
+    set -e;
     for D in ${DIRS}; do
       cd ${D};
       echo '=== TESTING' ${D};
