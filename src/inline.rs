@@ -55,6 +55,13 @@ macro_rules! llvm_asm {
     ("cpsie i" : : : "memory" : "volatile") => {
         core::arch::asm!("cpsie i");
     };
+    // From RISC-V's interrupt handling
+    ("csrrc $0, mstatus, $1" : "=r" ($state:ident) : "i" ($constant:ident) : "memory" : "volatile") => {
+        core::arch::asm!("csrrc {}, mstatus, {}", out(reg) $state, in(reg) $constant);
+    };
+    ("csrw mstatus, $0" : : "r" ($state:ident) : "memory" : "volatile") => {
+        core::arch::asm!("csrw mstatus, {}", in(reg) $state);
+    };
     ($($x:tt)*) => {{
         llvm_asm_is_not_supported_any_more();
         unreachable!()
