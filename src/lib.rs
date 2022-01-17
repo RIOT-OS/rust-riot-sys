@@ -84,9 +84,6 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-// when experimenting with C2Rust generated extern functions, C library fn are pulled in and they
-// have stuff like `pub type iovec`
-#![feature(extern_types)]
 // Produced by c2rust for riscv32imac, eg. on hifive1 board (at least with TOOLCHAIN=llvm)
 #![cfg_attr(target_arch = "riscv32", feature(core_intrinsics))]
 
