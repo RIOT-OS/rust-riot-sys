@@ -317,6 +317,9 @@ fn main() {
     // There's only one `pub type` usually, and that breaks use on stable, and src/inline.rs has a
     // workaround for that
     rustcode = rustcode.replace("\n    pub type __locale_t;", "");
+    rustcode = rustcode.replace("\n    pub type _IO_wide_data;", "");
+    rustcode = rustcode.replace("\n    pub type _IO_codecvt;", "");
+    rustcode = rustcode.replace("\n    pub type _IO_marker;", "");
 
     // This only matches when c2rust is built to even export body-less functions
     rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
