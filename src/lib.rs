@@ -88,7 +88,7 @@
 // have stuff like `pub type iovec`
 #![feature(extern_types)]
 // Produced by c2rust for riscv32imac, eg. on hifive1 board (at least with TOOLCHAIN=llvm)
-#![feature(core_intrinsics)]
+#![cfg_attr(target_arch = "riscv32", feature(core_intrinsics))]
 // Produced in const functions on the rpi-pico and ek-lm4f120xl boards, eg. when casting around
 // LED_PORT.
 #![feature(const_raw_ptr_deref)]
