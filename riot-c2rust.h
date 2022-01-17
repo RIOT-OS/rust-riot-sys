@@ -3,29 +3,26 @@
 // max_align_t which clang does not understand.
 #define __float128 long double
 
-// On native, the stdlib inclusion (needed for abort) would make things trip;
-// the ones used with the embedded boards is tamer there.
-#ifndef BOARD_NATIVE
 // Workaround for https://github.com/immunant/c2rust/issues/345
 //
-// As these are not really in the call tree of any public RIOT function,
-// aborting is probably enough.
+// As these are not really in the call tree of any public RIOT function, making
+// their presence a linker error is good enough. (If it ever shows up as an
+// actual error, it should be possible to implement it in assembly).
 //
 // Their names are changed around in preprocessor because otherwise they'd
 // cause a failure at the translation stage already ("Unimplemented builtin
-// __builtin_arm_get_fpscr"); this way the error can be delayed and the
-// function redirected.
-#include <stdlib.h>
+// __builtin_arm_get_fpscr"); this way, the it gets turned into a different
+// error, a linker error for the missing symbol, that does not occur as long as
+// the function is not used.
 #define __builtin_arm_get_fpscr __masked_builtin_arm_get_fpscr
 #define __builtin_arm_set_fpscr __masked_builtin_arm_set_fpscr
+extern int missing_implementation_for_fpscr_in_c2rust_see_issue_345;
 static inline int __masked_builtin_arm_get_fpscr(void) {
-	abort();
+	return missing_implementation_for_fpscr_in_c2rust_see_issue_345;
 }
 static inline void __masked_builtin_arm_set_fpscr(int fpscr){
-	(void)fpscr;
-	abort();
+	missing_implementation_for_fpscr_in_c2rust_see_issue_345 = fpscr;
 }
-#endif
 
 // This is currently the only relevant user of stdatomic.h. As it doesn't
 // access its relevant atomic field from static inlines (and thus from built

@@ -342,7 +342,9 @@ fn main() {
             // used as a callback, therefore does need the extern "C" -- FIXME probably worth a RIOT issue
             ("_evtimer_msg_handler" | "_evtimer_mbox_handler", _) => function_original_prefix,
 
-            // Assigned by CMSIS to some const; see also riot-c2rust.h
+            // Assigned by CMSIS to the const that is being overridden and thus needs its original
+            // "C" type; see also riot-c2rust.h. (Actually using it would cause a linker error
+            // anyway).
             ("__masked_builtin_arm_get_fpscr" | "__masked_builtin_arm_set_fpscr", _) => {
                 function_original_prefix
             }
