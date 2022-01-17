@@ -377,6 +377,16 @@ fn main() {
                 }
             }
 
+            // C2Rust transpiles these into Rust with conflicting lifetimes, see
+            // https://github.com/immunant/c2rust/issues/309
+            //
+            // Simply disabling them here because they aren't used by any other inline code (and
+            // will, when the manual llvm_asm to asm changes are added to riot-sys, not have manual
+            // asm conversions on top of that).
+            ("__SMLALD" | "__SMLALDX" | "__SMLSLD" | "__SMLSLDX", _) => {
+                "#[cfg(c2rust_fixed_309)]\npub unsafe fn "
+            }
+
             // The rest we don't need to call through the extern convention, but let's please make
             // them pub to be usable
             _ => "pub unsafe fn ",
