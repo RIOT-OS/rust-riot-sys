@@ -317,20 +317,6 @@ fn main() {
     // This only matches when c2rust is built to even export body-less functions
     rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
 
-    // The GCLK global constant interferes with arguments and fields named GCLK in bindgen, as
-    // these would (due to the `use inline::*;` blanket import) try to make that into a matchable
-    // pattern. Renaming the whole constant.
-    //
-    // This is needed, for example, on the adafruit-itsybitsy-m4 board with the riot-hello-world
-    // example.
-    //
-    // Likewise, the SERCOM constants are set by the samr30-xpro board.
-    let gclk_word = regex::Regex::new(r"\bGCLK\b").expect("Invalid static regular expression");
-    rustcode = gclk_word.replace_all(&rustcode, "GLOBAL_GCLK").to_string();
-    let sercom_word =
-        regex::Regex::new(r"\bSERCOM[0-9]\b").expect("Invalid static regular expression");
-    rustcode = sercom_word.replace_all(&rustcode, "GLOBAL_$0").to_string();
-
     // Replace the function declarations with ... usually something pub, but special considerations
     // may apply
     let mut rustcode_functionsreplaced = String::new();
