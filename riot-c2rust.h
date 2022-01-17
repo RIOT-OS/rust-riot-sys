@@ -1,8 +1,3 @@
-
-// When GCC preprocesses the sources on native, it puts a __float128 into the
-// max_align_t which clang does not understand.
-#define __float128 long double
-
 // Workaround for https://github.com/immunant/c2rust/issues/345
 //
 // As these are not really in the call tree of any public RIOT function, making

@@ -88,10 +88,4 @@ use cty as libc;
 
 use c2rust_bitfields::*;
 
-mod f128 {
-    extern "C" {
-        pub type f128;
-    }
-}
-
 include!(concat!(env!("OUT_DIR"), "/riot_c2rust_replaced.rs"));
