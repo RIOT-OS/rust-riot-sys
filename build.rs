@@ -75,18 +75,9 @@ fn main() {
         .into_iter()
         .filter(|x| {
             match x.as_ref() {
-                // non-clang flags showing up with arm cortex m3 (eg. stk3700 board)
-                "-Werror" => false,
-                "-mno-thumb-interwork" => false,
-                "-Wformat-overflow" => false,
-                "-Wformat-truncation" => false,
-                // non-clang flags showing up for the hifive1 board
-                "-mcmodel=medlow" => false,
-                "-msmall-data-limit=8" => false,
-                "-nostartfiles" => false, // that probably shows up on arm too, but shouldn't matter
-                "-fno-delete-null-pointer-checks" => false, // seen on an Ubuntu 18.04
-                // and much more worries on that ubuntu ... maybe just recommend TOOLCHAIN=llvm ?
-                // Don't pollute the riot-sys source directory
+                // Don't pollute the riot-sys source directory -- cargo is run unconditionally
+                // in the Makefiles, and this script tracks on its own which files to depend on
+                // for rebuilding.
                 "-MD" => false,
                 // accept all others
                 _ => true,
@@ -114,9 +105,12 @@ fn main() {
     //
     // The output is cleared beforehand (for c2rust no-ops when an output file is present), and the
     // input is copied to OUT_DIR as that's the easiest way to get c2rust to put the output file in
-    // a different place.
+    // a different place -- and because some additions are generated anyway.
 
-    let headercopy = out_path.join("riot-c2rust.h");
+    let c2rust_infile = "riot-c2rust.h";
+    // Follows from c2rust_infile and C2Rust's file name translation scheme
+    let c2rust_output = out_path.join("riot_c2rust.rs");
+    let headercopy = out_path.join(c2rust_infile);
     println!("cargo:rerun-if-changed=riot-c2rust.h");
 
     std::fs::copy("riot-headers.h", out_path.join("riot-headers.h"))
@@ -205,54 +199,9 @@ fn main() {
         .sync_all()
         .expect("failed to write to riot-c2rust.h");
 
-    let c2rust_infile;
-    let c2rust_outfile;
     if cc.find("clang") == None {
-        println!("cargo:warning=riot-sys will require receiving clang-style arguments in future versions. When building with GCC, RIOT's compile_commands tool can provide equivalent clang arguments.");
-
-        // Run through preprocessor with platform specific arguments (cf.
-        // <https://github.com/immunant/c2rust/issues/305>)
-        //
-        // This is only done for non-clang setups; those do not need it (and can profit from the
-        // unexpanded macros). Also, clang does not have "-fdirectives-only' (but their
-        // "-frewrite-includes" might do as well if it turns out that this *is* needed even there).
-        let preprocessed_headercopy = out_path.join("riot-c2rust-expanded.h");
-        let clang_e_args: Vec<_> = cflags
-            .iter()
-            .map(|s| s.clone())
-            .chain(
-                vec![
-                    "-E",
-                    "-fdirectives-only",
-                    headercopy.to_str().expect("Non-string path for headercopy"),
-                    "-o",
-                    preprocessed_headercopy
-                        .to_str()
-                        .expect("Non-string path in preprocessed_headercopy"),
-                ]
-                .drain(..)
-                .map(|x| x.to_string()),
-            )
-            .collect();
-        let status = std::process::Command::new(cc)
-            .args(clang_e_args)
-            .status()
-            .expect("Preprocessor run failed");
-        if !status.success() {
-            println!(
-                "cargo:warning=Preprocessor failed with error code {}, exiting",
-                status
-            );
-            std::process::exit(status.code().unwrap_or(1));
-        }
-        c2rust_infile = "riot-c2rust-expanded.h";
-        c2rust_outfile = "riot_c2rust_expanded.rs";
-    } else {
-        c2rust_infile = "riot-c2rust.h";
-        c2rust_outfile = "riot_c2rust.rs";
-    }
-
-    let output = out_path.join(c2rust_outfile);
+        panic!("riot-sys only accepts clang style CFLAGS. RIOT can produce them using the compile_commands tool even when using a non-clang compiler, such as GCC.");
+    };
 
     let arguments: Vec<_> = core::iter::once("any-cc".to_string())
         .chain(cflags.into_iter())
@@ -306,7 +255,7 @@ fn main() {
     use std::io::{Read, Write};
 
     let mut rustcode = String::new();
-    std::fs::File::open(output)
+    std::fs::File::open(c2rust_output)
         .expect("Failed to open riot_c2rust.rs")
         .read_to_string(&mut rustcode)
         .expect("Failed to read from riot_c2rust.rs");
