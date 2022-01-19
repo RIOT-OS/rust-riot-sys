@@ -88,10 +88,13 @@ use cty as libc;
 
 use c2rust_bitfields::*;
 
-mod f128 {
-    extern "C" {
-        pub type f128;
-    }
-}
+// This is a replacement for the `pub type __locale_t` and the IO lines that C2Rust generates
+// because of something from stdlib; it is stripped out of the compiled code and turned into a void
+// pointer for lack of better ideas. (Leaving it as a pub struct would require unstable Rust).
+pub type __locale_t = libc::c_void;
+pub type _IO_wide_data = libc::c_void;
+pub type _IO_codecvt = libc::c_void;
+pub type _IO_marker = libc::c_void;
+pub type __lock = libc::c_void;
 
 include!(concat!(env!("OUT_DIR"), "/riot_c2rust_replaced.rs"));
