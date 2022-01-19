@@ -75,6 +75,9 @@ fn main() {
         .into_iter()
         .filter(|x| {
             match x.as_ref() {
+                // These will be in riotbuild.h as well, and better there because bindgen emits
+                // consts for data from files but not from defines (?)
+                x if x.starts_with("-D") => false,
                 // Don't pollute the riot-sys source directory -- cargo is run unconditionally
                 // in the Makefiles, and this script tracks on its own which files to depend on
                 // for rebuilding.
