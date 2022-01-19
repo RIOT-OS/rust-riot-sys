@@ -208,6 +208,8 @@ fn main() {
     let c2rust_infile;
     let c2rust_outfile;
     if cc.find("clang") == None {
+        println!("cargo:warning=riot-sys will require receiving clang-style arguments in future versions. When building with GCC, RIOT's compile_commands tool can provide equivalent clang arguments.");
+
         // Run through preprocessor with platform specific arguments (cf.
         // <https://github.com/immunant/c2rust/issues/305>)
         //
