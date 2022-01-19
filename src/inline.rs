@@ -28,9 +28,25 @@
 #![allow(unused)]
 
 extern "C" {
+    /// Symbol indicating untranslated `llvm_asm!` code.
+    ///
+    /// When this is missing at the linker stage, do not look for its definition (for it should be
+    /// left undefined), but find where it is used and manually translate the assemblies.
     fn llvm_asm_is_not_supported_any_more();
 }
 
+/// Compatibility macro that looks up assembly in the deprecated `llvm_asm!` style in a manually
+/// manged list of known short snippets mapped to `asm!` equivalents.
+///
+/// As this is tailored for RIOT's C2Rust output, code not found in the list is not rejected at
+/// compile time, but mapped to the external (and nonexistent) symbol
+/// [llvm_asm_is_not_supported_any_more]. This allows otherwise unused code (which is there either
+/// because the bulk-used CMSIS just defines it and it is unused by RIOT, or just because it
+/// doesn't happen to be used by any actually used function) to just slip through without causing
+/// much fuss.
+///
+/// This is defined right in the inline module, because using it from another module would make the
+/// imports ambiguous versus the builtin `llvm_asm!` macro.
 macro_rules! llvm_asm {
     // They can probably be deduplicated (eg. around known strings like "cpsid i" and "cpsie i"
     // that all just need to be passed on, or by the MSR/MRS generalizing over the service registe)
