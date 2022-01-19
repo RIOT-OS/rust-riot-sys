@@ -12,8 +12,11 @@ fn main() {
     let cc;
     let mut cflags;
 
+    println!("cargo:rerun-if-env-changed=RIOT_CC");
+    println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
+    println!("cargo:rerun-if-env-changed=RIOT_COMPILE_COMMANDS_JSON");
+
     if let Ok(commands_json) = env::var("RIOT_COMPILE_COMMANDS_JSON") {
-        println!("cargo:rerun-if-env-changed=RIOT_COMPILE_COMMANDS_JSON");
         println!("cargo:rerun-if-changed={}", commands_json);
         let commands_file =
             std::fs::File::open(commands_json).expect("Failed to open RIOT_COMPILE_COMMANDS_JSON");
@@ -58,9 +61,6 @@ fn main() {
         cflags = env::var("RIOT_CFLAGS")
             .expect("Please pass in RIOT_CFLAGS; see README.md for details.");
     }
-
-    println!("cargo:rerun-if-env-changed=RIOT_CC");
-    println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
 
     // pass CC and CFLAGS to dependees
     // this requires a `links = "riot-sys"` directive in Cargo.toml.
