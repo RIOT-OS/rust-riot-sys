@@ -28,17 +28,66 @@ fn main() {
         let parsed: Vec<Entry> = serde_json::from_reader(commands_file)
             .expect("Failed to parse RIOT_COMPILE_COMMANDS_JSON");
 
-        // Should we only pick the consensus set here?
-        let any = &parsed[0];
-
-        cc = any.arguments[0].clone();
-        cflags = shlex::join(
-            any.arguments[1..]
+        // We need to find a consensus list -- otherwise single modules like stdio_uart that define
+        // flags like -Wno-cast-function-type can throw things off. (It's not like the actual ABI
+        // compatibility should suffer from something like that, for any flags like enum packing
+        // need to be the same systemwide anyway for things to to go very wrong, and furthermore
+        // the flag should have been caught by the compile commands generation if it's not good for
+        // LLVM (maybe it is and bindgen is just behind) -- but at any rate, finding some consensus
+        // is a good idea here).
+        //
+        // This is relatively brittle, but still better than the previous approach of just taking
+        // the first entry.
+        //
+        // A good long-term solution might be to take CFLAGS as the build system produces them, but
+        // pass them through the LLVMization process of create_compile_commands without actually
+        // turning them into compile commands.
+        let mut consensus_cc: Option<&str> = None;
+        let mut consensus_cflag_groups: Option<Vec<Vec<&str>>> = None;
+        for entry in parsed.iter() {
+            if let Some(consensus_cc) = consensus_cc.as_ref() {
+                assert!(consensus_cc == &entry.arguments[0])
+            } else {
+                consensus_cc = Some(&entry.arguments[0]);
+            }
+            let arg_iter = entry.arguments[1..]
                 .iter()
                 .map(|s| s.as_str())
-                // Anything after -c is not CFLAGS but concrete input/output stuff
-                .take_while(|&s| s != "-c"),
-        );
+                // Anything after -c is not CFLAGS but concrete input/output stuff.
+                .take_while(|&s| s != "-c" && s != "-MQ");
+            // Heuristically grouping them to drop different arguments as whole group
+            let mut cflag_groups = vec![];
+            for mut arg in arg_iter {
+                if arg.starts_with("-I") {
+                    // -I arguments are given inconsistently with and without trailing slashes;
+                    // removing them keeps them from being pruned from the consensus set
+                    arg = arg.trim_end_matches('/');
+                }
+                if arg.starts_with('-') {
+                    cflag_groups.push(vec![arg]);
+                } else {
+                    cflag_groups
+                        .last_mut()
+                        .expect("CFLAG options all start with a dash")
+                        .push(arg);
+                }
+            }
+            if let Some(consensus_cflag_groups) = consensus_cflag_groups.as_mut() {
+                if &cflag_groups != consensus_cflag_groups {
+                    // consensus is in a good ordering, so we'll just strip it down
+                    *consensus_cflag_groups = consensus_cflag_groups
+                        .drain(..)
+                        .filter(|i| cflag_groups.contains(i))
+                        .collect();
+                }
+            } else {
+                consensus_cflag_groups = Some(cflag_groups);
+            }
+        }
+        cc = consensus_cc
+            .expect("Entries are present in compile_commands.json")
+            .to_string();
+        cflags = shlex::join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s));
 
         println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
         let usemodule = env::var("RIOT_USEMODULE")
