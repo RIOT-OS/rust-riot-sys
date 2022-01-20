@@ -77,7 +77,15 @@ fn main() {
                     // consensus is in a good ordering, so we'll just strip it down
                     *consensus_cflag_groups = consensus_cflag_groups
                         .drain(..)
-                        .filter(|i| cflag_groups.contains(i))
+                        .filter(|i| {
+                            let mut keep = cflag_groups.contains(i);
+                            // USEMODULE_INCLUDES are sometimes not in all of the entries; see note
+                            // on brittleness above.
+                            keep |= i[0].starts_with("-I");
+                            // Left as multiple lines to ease hooking in with debug statements when
+                            // something goes wrong again...
+                            keep
+                        })
                         .collect();
                 }
             } else {
