@@ -12,8 +12,11 @@ fn main() {
     let cc;
     let mut cflags;
 
+    println!("cargo:rerun-if-env-changed=RIOT_CC");
+    println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
+    println!("cargo:rerun-if-env-changed=RIOT_COMPILE_COMMANDS_JSON");
+
     if let Ok(commands_json) = env::var("RIOT_COMPILE_COMMANDS_JSON") {
-        println!("cargo:rerun-if-env-changed=RIOT_COMPILE_COMMANDS_JSON");
         println!("cargo:rerun-if-changed={}", commands_json);
         let commands_file =
             std::fs::File::open(commands_json).expect("Failed to open RIOT_COMPILE_COMMANDS_JSON");
@@ -25,17 +28,74 @@ fn main() {
         let parsed: Vec<Entry> = serde_json::from_reader(commands_file)
             .expect("Failed to parse RIOT_COMPILE_COMMANDS_JSON");
 
-        // Should we only pick the consensus set here?
-        let any = &parsed[0];
-
-        cc = any.arguments[0].clone();
-        cflags = shlex::join(
-            any.arguments[1..]
+        // We need to find a consensus list -- otherwise single modules like stdio_uart that define
+        // flags like -Wno-cast-function-type can throw things off. (It's not like the actual ABI
+        // compatibility should suffer from something like that, for any flags like enum packing
+        // need to be the same systemwide anyway for things to to go very wrong, and furthermore
+        // the flag should have been caught by the compile commands generation if it's not good for
+        // LLVM (maybe it is and bindgen is just behind) -- but at any rate, finding some consensus
+        // is a good idea here).
+        //
+        // This is relatively brittle, but still better than the previous approach of just taking
+        // the first entry.
+        //
+        // A good long-term solution might be to take CFLAGS as the build system produces them, but
+        // pass them through the LLVMization process of create_compile_commands without actually
+        // turning them into compile commands.
+        let mut consensus_cc: Option<&str> = None;
+        let mut consensus_cflag_groups: Option<Vec<Vec<&str>>> = None;
+        for entry in parsed.iter() {
+            if let Some(consensus_cc) = consensus_cc.as_ref() {
+                assert!(consensus_cc == &entry.arguments[0])
+            } else {
+                consensus_cc = Some(&entry.arguments[0]);
+            }
+            let arg_iter = entry.arguments[1..]
                 .iter()
                 .map(|s| s.as_str())
-                // Anything after -c is not CFLAGS but concrete input/output stuff
-                .take_while(|&s| s != "-c"),
-        );
+                // Anything after -c is not CFLAGS but concrete input/output stuff.
+                .take_while(|&s| s != "-c" && s != "-MQ");
+            // Heuristically grouping them to drop different arguments as whole group
+            let mut cflag_groups = vec![];
+            for mut arg in arg_iter {
+                if arg.starts_with("-I") {
+                    // -I arguments are given inconsistently with and without trailing slashes;
+                    // removing them keeps them from being pruned from the consensus set
+                    arg = arg.trim_end_matches('/');
+                }
+                if arg.starts_with('-') {
+                    cflag_groups.push(vec![arg]);
+                } else {
+                    cflag_groups
+                        .last_mut()
+                        .expect("CFLAG options all start with a dash")
+                        .push(arg);
+                }
+            }
+            if let Some(consensus_cflag_groups) = consensus_cflag_groups.as_mut() {
+                if &cflag_groups != consensus_cflag_groups {
+                    // consensus is in a good ordering, so we'll just strip it down
+                    *consensus_cflag_groups = consensus_cflag_groups
+                        .drain(..)
+                        .filter(|i| {
+                            let mut keep = cflag_groups.contains(i);
+                            // USEMODULE_INCLUDES are sometimes not in all of the entries; see note
+                            // on brittleness above.
+                            keep |= i[0].starts_with("-I");
+                            // Left as multiple lines to ease hooking in with debug statements when
+                            // something goes wrong again...
+                            keep
+                        })
+                        .collect();
+                }
+            } else {
+                consensus_cflag_groups = Some(cflag_groups);
+            }
+        }
+        cc = consensus_cc
+            .expect("Entries are present in compile_commands.json")
+            .to_string();
+        cflags = shlex::join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s));
 
         println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
         let usemodule = env::var("RIOT_USEMODULE")
@@ -59,9 +119,6 @@ fn main() {
             .expect("Please pass in RIOT_CFLAGS; see README.md for details.");
     }
 
-    println!("cargo:rerun-if-env-changed=RIOT_CC");
-    println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
-
     // pass CC and CFLAGS to dependees
     // this requires a `links = "riot-sys"` directive in Cargo.toml.
     // Dependees can then access these as DEP_RIOT_SYS_CC and DEP_RIOT_SYS_CFLAGS.
@@ -75,18 +132,12 @@ fn main() {
         .into_iter()
         .filter(|x| {
             match x.as_ref() {
-                // non-clang flags showing up with arm cortex m3 (eg. stk3700 board)
-                "-Werror" => false,
-                "-mno-thumb-interwork" => false,
-                "-Wformat-overflow" => false,
-                "-Wformat-truncation" => false,
-                // non-clang flags showing up for the hifive1 board
-                "-mcmodel=medlow" => false,
-                "-msmall-data-limit=8" => false,
-                "-nostartfiles" => false, // that probably shows up on arm too, but shouldn't matter
-                "-fno-delete-null-pointer-checks" => false, // seen on an Ubuntu 18.04
-                // and much more worries on that ubuntu ... maybe just recommend TOOLCHAIN=llvm ?
-                // Don't pollute the riot-sys source directory
+                // These will be in riotbuild.h as well, and better there because bindgen emits
+                // consts for data from files but not from defines (?)
+                x if x.starts_with("-D") => false,
+                // Don't pollute the riot-sys source directory -- cargo is run unconditionally
+                // in the Makefiles, and this script tracks on its own which files to depend on
+                // for rebuilding.
                 "-MD" => false,
                 // accept all others
                 _ => true,
@@ -114,9 +165,12 @@ fn main() {
     //
     // The output is cleared beforehand (for c2rust no-ops when an output file is present), and the
     // input is copied to OUT_DIR as that's the easiest way to get c2rust to put the output file in
-    // a different place.
+    // a different place -- and because some additions are generated anyway.
 
-    let headercopy = out_path.join("riot-c2rust.h");
+    let c2rust_infile = "riot-c2rust.h";
+    // Follows from c2rust_infile and C2Rust's file name translation scheme
+    let c2rust_output = out_path.join("riot_c2rust.rs");
+    let headercopy = out_path.join(c2rust_infile);
     println!("cargo:rerun-if-changed=riot-c2rust.h");
 
     std::fs::copy("riot-headers.h", out_path.join("riot-headers.h"))
@@ -205,54 +259,9 @@ fn main() {
         .sync_all()
         .expect("failed to write to riot-c2rust.h");
 
-    let c2rust_infile;
-    let c2rust_outfile;
     if cc.find("clang") == None {
-        println!("cargo:warning=riot-sys will require receiving clang-style arguments in future versions. When building with GCC, RIOT's compile_commands tool can provide equivalent clang arguments.");
-
-        // Run through preprocessor with platform specific arguments (cf.
-        // <https://github.com/immunant/c2rust/issues/305>)
-        //
-        // This is only done for non-clang setups; those do not need it (and can profit from the
-        // unexpanded macros). Also, clang does not have "-fdirectives-only' (but their
-        // "-frewrite-includes" might do as well if it turns out that this *is* needed even there).
-        let preprocessed_headercopy = out_path.join("riot-c2rust-expanded.h");
-        let clang_e_args: Vec<_> = cflags
-            .iter()
-            .map(|s| s.clone())
-            .chain(
-                vec![
-                    "-E",
-                    "-fdirectives-only",
-                    headercopy.to_str().expect("Non-string path for headercopy"),
-                    "-o",
-                    preprocessed_headercopy
-                        .to_str()
-                        .expect("Non-string path in preprocessed_headercopy"),
-                ]
-                .drain(..)
-                .map(|x| x.to_string()),
-            )
-            .collect();
-        let status = std::process::Command::new(cc)
-            .args(clang_e_args)
-            .status()
-            .expect("Preprocessor run failed");
-        if !status.success() {
-            println!(
-                "cargo:warning=Preprocessor failed with error code {}, exiting",
-                status
-            );
-            std::process::exit(status.code().unwrap_or(1));
-        }
-        c2rust_infile = "riot-c2rust-expanded.h";
-        c2rust_outfile = "riot_c2rust_expanded.rs";
-    } else {
-        c2rust_infile = "riot-c2rust.h";
-        c2rust_outfile = "riot_c2rust.rs";
-    }
-
-    let output = out_path.join(c2rust_outfile);
+        panic!("riot-sys only accepts clang style CFLAGS. RIOT can produce them using the compile_commands tool even when using a non-clang compiler, such as GCC.");
+    };
 
     let arguments: Vec<_> = core::iter::once("any-cc".to_string())
         .chain(cflags.into_iter())
@@ -306,7 +315,7 @@ fn main() {
     use std::io::{Read, Write};
 
     let mut rustcode = String::new();
-    std::fs::File::open(output)
+    std::fs::File::open(c2rust_output)
         .expect("Failed to open riot_c2rust.rs")
         .read_to_string(&mut rustcode)
         .expect("Failed to read from riot_c2rust.rs");

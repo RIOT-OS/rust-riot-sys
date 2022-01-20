@@ -132,8 +132,10 @@
 #include <net/sock/util.h>
 #endif
 #ifdef MODULE_VFS
-#ifndef IS_C2RUST
 // Touches atomics, but we don't need macro expansions or static inlines from this one
+#ifndef IS_C2RUST
+// Actually using VFS needs constants like O_RDONLY
+#include <fcntl.h>
 #include <vfs.h>
 #endif
 #endif
