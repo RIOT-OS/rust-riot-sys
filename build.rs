@@ -28,13 +28,11 @@ fn main() {
         let parsed: Vec<Entry> = serde_json::from_reader(commands_file)
             .expect("Failed to parse RIOT_COMPILE_COMMANDS_JSON");
 
-        // We need to find a consensus list -- otherwise single modules like stdio_uart that define
-        // flags like -Wno-cast-function-type can throw things off. (It's not like the actual ABI
-        // compatibility should suffer from something like that, for any flags like enum packing
-        // need to be the same systemwide anyway for things to to go very wrong, and furthermore
-        // the flag should have been caught by the compile commands generation if it's not good for
-        // LLVM (maybe it is and bindgen is just behind) -- but at any rate, finding some consensus
-        // is a good idea here).
+        // We need to find a consensus list -- otherwise single modules like stdio_uart that
+        // defines anything odd for its own purpose can throw things off. (It's not like the actual
+        // ABI compatibility should suffer from them, for any flags like enum packing need to be
+        // the same systemwide anyway for things to to go very wrong) -- but at any rate, finding
+        // some consensus is to some extent necessary here).
         //
         // This is relatively brittle, but still better than the previous approach of just taking
         // the first entry.
