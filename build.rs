@@ -456,7 +456,7 @@ fn main() {
     }
     let toplevel_from_inline: Vec<String> = toplevel_from_inline
         .drain(..)
-        .filter(|s: &String| rustcode.contains(s))
+        .filter(|s: &String| rustcode.contains(&format!(" {}(", s)))
         .collect();
     let toplevel_from_inline_filename = out_path.join("toplevel_from_inline.rs");
     std::fs::File::create(toplevel_from_inline_filename)
