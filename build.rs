@@ -421,6 +421,11 @@ fn main() {
     // macro_.
     //
     // Some functions are also in because they're innocuous enough.
+    //
+    // If (eg. on some platform but not on others) any function here is not an inline function,
+    // that does not hurt; the entry doesn't do anything on these then. (But it is especially
+    // valuable, as it ensures that on the *other* platforms it's still available with the same
+    // Rust name).
     let mut toplevel_from_inline: Vec<String> = [
         "bluetil_ad_add_flags",
         "coap_get_code_raw",
