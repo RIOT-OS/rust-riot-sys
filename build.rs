@@ -329,13 +329,16 @@ fn main() {
     // C2Rust still generates old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
     rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
 
-    // There's only one `pub type` usually, and that breaks use on stable, and src/inline.rs has a
-    // workaround for that
-    rustcode = rustcode.replace("\n    pub type __locale_t;", "");
-    rustcode = rustcode.replace("\n    pub type _IO_wide_data;", "");
-    rustcode = rustcode.replace("\n    pub type _IO_codecvt;", "");
-    rustcode = rustcode.replace("\n    pub type _IO_marker;", "");
-    rustcode = rustcode.replace("\n    pub type __lock;", "");
+    println!("cargo:rerun-if-env-changed=CARGO_FEATURE_KEEP_EXTERN_TYPES");
+    if env::var("CARGO_FEATURE_KEEP_EXTERN_TYPES").is_err() {
+        // There's only one `pub type` usually, and that breaks use on stable, and src/inline.rs has a
+        // workaround for that
+        rustcode = rustcode.replace("\n    pub type __locale_t;", "");
+        rustcode = rustcode.replace("\n    pub type _IO_wide_data;", "");
+        rustcode = rustcode.replace("\n    pub type _IO_codecvt;", "");
+        rustcode = rustcode.replace("\n    pub type _IO_marker;", "");
+        rustcode = rustcode.replace("\n    pub type __lock;", "");
+    }
 
     // This only matches when c2rust is built to even export body-less functions
     rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
