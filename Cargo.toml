@@ -20,6 +20,9 @@ c2rust-asm-casts = "0.2"
 # Relevant for some boards like the wemos-zero
 c2rust-bitfields = { version = "0.3", features = ["no_std"] }
 
+# optionally use RIOT-rs's riot-build
+riot-build = { version = "0.1.0", optional = true }
+
 [build-dependencies]
 bindgen = "^0.59.1"
 shlex = "^1"
@@ -32,3 +35,6 @@ regex = "1"
 # types are disabled, and the library uses the nightly compiler feature
 # `extern_types`.
 keep-extern-types = []
+
+# this needs to be set to build together with RIOT-rs.
+riot-rs = [ "riot-build", "keep-extern-types" ]
