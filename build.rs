@@ -12,21 +12,26 @@ fn main() {
     let cc;
     let mut cflags;
 
+    #[cfg(not(feature = "riot-rs"))]
+    let compile_commands_json = "RIOT_COMPILE_COMMANDS_JSON";
+    #[cfg(feature = "riot-rs")]
+    let compile_commands_json = "DEP_RIOT_BUILD_COMPILE_COMMANDS_JSON";
+
     println!("cargo:rerun-if-env-changed=RIOT_CC");
     println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
-    println!("cargo:rerun-if-env-changed=RIOT_COMPILE_COMMANDS_JSON");
+    println!("cargo:rerun-if-env-changed={}", &compile_commands_json);
 
-    if let Ok(commands_json) = env::var("RIOT_COMPILE_COMMANDS_JSON") {
+    if let Ok(commands_json) = env::var(compile_commands_json) {
         println!("cargo:rerun-if-changed={}", commands_json);
-        let commands_file =
-            std::fs::File::open(commands_json).expect("Failed to open RIOT_COMPILE_COMMANDS_JSON");
+        let commands_file = std::fs::File::open(&commands_json)
+            .expect(&format!("Failed to open {}", &commands_json));
 
         #[derive(Debug, serde::Deserialize)]
         struct Entry {
             arguments: Vec<String>,
         }
         let parsed: Vec<Entry> = serde_json::from_reader(commands_file)
-            .expect("Failed to parse RIOT_COMPILE_COMMANDS_JSON");
+            .expect(&format!("Failed to parse {}", &compile_commands_json));
 
         // We need to find a consensus list -- otherwise single modules like stdio_uart that
         // defines anything odd for its own purpose can throw things off. (It's not like the actual
@@ -95,9 +100,24 @@ fn main() {
             .to_string();
         cflags = shlex::join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s));
 
-        println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
-        let usemodule = env::var("RIOT_USEMODULE")
-            .expect("RIOT_USEMODULE is required when RIOT_COMPILE_COMMANDS_JSON is given");
+        let usemodule = {
+            #[cfg(not(feature = "riot-rs"))]
+            {
+                println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
+                env::var("RIOT_USEMODULE").expect(&format!(
+                    "RIOT_USEMODULE is required when {} is given",
+                    &compile_commands_json,
+                ))
+            }
+            #[cfg(feature = "riot-rs")]
+            {
+                println!("cargo:rerun-if-env-changed=DEP_RIOT_BUILD_DIR");
+                let riot_builddir =
+                    env::var("DEP_RIOT_BUILD_DIR").expect("DEP_RIOT_BUILD_DIR unset?");
+                get_riot_var(&riot_builddir, "USEMODULE")
+            }
+        };
+
         for m in usemodule.split(" ") {
             // Hack around https://github.com/RIOT-OS/RIOT/pull/16129#issuecomment-805810090
             write!(
@@ -506,4 +526,18 @@ fn main() {
             println!("cargo:MARKER_{}=1", name);
         }
     }
+}
+
+#[cfg(feature = "riot-rs")]
+fn get_riot_var(riot_builddir: &str, var: &str) -> String {
+    let output = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(format!(
+            "{} make --no-print-directory -C {} TOOLCHAIN=llvm info-debug-variable-{}",
+            "WARNING_EXTERNAL_MODULE_DIRS=0", riot_builddir, var
+        ))
+        .output()
+        .unwrap()
+        .stdout;
+    String::from_utf8_lossy(output.as_slice()).trim_end().into()
 }
