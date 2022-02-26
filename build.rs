@@ -520,6 +520,8 @@ fn main() {
     let markers = [
         // See https://github.com/RIOT-OS/RIOT/pull/17569, available after 2022.01
         ("pub const UNIT_T:", "phydat_unit_t"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17660, available after 2022.01
+        ("vfs_iterate_mount_dirs", "vfs_iterate_mount_dirs"),
     ];
     for (needle, name) in markers {
         if bindgen_output.contains(needle) {
