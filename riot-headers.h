@@ -1,7 +1,15 @@
-#include <thread.h>
+/* core libraries */
 #include <irq.h>
-#include <stdio_base.h>
+#include <mutex.h>
+#ifdef MODULE_CORE_THREAD_FLAGS
+#include <thread_flags.h>
+#endif
+#include <thread.h>
 
+/* board include */
+#include <board.h>
+
+/* periph drivers */
 #ifdef MODULE_PERIPH_ADC
 #include <periph/adc.h>
 #endif
@@ -48,9 +56,6 @@
 #ifdef MODULE_PERIPH_RTT
 #include <periph/rtt.h>
 #endif
-#ifdef MODULE_SHELL
-#include <shell.h>
-#endif
 #ifdef MODULE_PERIPH_SPI
 #include <periph/spi.h>
 #endif
@@ -75,8 +80,24 @@
 #include <periph/wdt.h>
 #endif
 
-#ifdef MODULE_CORE_THREAD_FLAGS
-#include <thread_flags.h>
+/* sys libraries */
+#ifdef MODULE_BLUETIL_AD
+#include <net/bluetil/ad.h>
+#endif
+#ifdef MODULE_CORD_COMMON
+#include <net/cord/common.h>
+#endif
+#ifdef MODULE_CORD_EP
+#include <net/cord/ep.h>
+#endif
+#ifdef MODULE_CORD_EP_STANDALONE
+#include <net/cord/ep_standalone.h>
+#endif
+#ifdef MODULE_CORD_EPSIM
+#include <net/cord/epsim.h>
+#endif
+#ifdef MODULE_GCOAP
+#include <net/gcoap.h>
 #endif
 #include <net/gnrc.h>
 #include <net/gnrc/udp.h>
@@ -96,16 +117,21 @@
 #ifdef MODULE_SOCK_ASYNC
 #include <net/sock/async.h>
 #endif
-#ifdef MODULE_GCOAP
-#include <net/gcoap.h>
-#endif
 #include <saul.h>
 #include <saul_reg.h>
+#include <stdio_base.h>
+#ifdef MODULE_SHELL
+#include <shell.h>
+#endif
+#ifdef MODULE_SOCK_UTIL
+#include <net/sock/util.h>
+#endif
 #ifdef MODULE_PTHREAD
-// for rwlock
 #include <pthread.h>
 #endif
-#include <board.h>
+#ifdef MODULE_SUIT_TRANSPORT
+#include "suit/transport/coap.h"
+#endif
 #ifdef MODULE_XTIMER
 #include <xtimer.h>
 #endif
@@ -114,22 +140,6 @@
 #endif
 #ifdef MODULE_ZTIMER_PERIODIC
 #include <ztimer/periodic.h>
-#endif
-#include <mutex.h>
-#ifdef MODULE_CORD_COMMON
-#include <net/cord/common.h>
-#endif
-#ifdef MODULE_CORD_EP
-#include <net/cord/ep.h>
-#endif
-#ifdef MODULE_CORD_EP_STANDALONE
-#include <net/cord/ep_standalone.h>
-#endif
-#ifdef MODULE_CORD_EPSIM
-#include <net/cord/epsim.h>
-#endif
-#ifdef MODULE_SOCK_UTIL
-#include <net/sock/util.h>
 #endif
 #ifdef MODULE_VFS
 // Touches atomics, but we don't need macro expansions or static inlines from this one
@@ -140,6 +150,7 @@
 #endif
 #endif
 
+/* packages */
 #ifdef MODULE_NIMBLE_HOST
 #  include "host/ble_gatt.h"
 #  ifndef IS_C2RUST
@@ -150,21 +161,14 @@
 #ifdef MODULE_NIMBLE_SVC_GAP
 #include "services/gap/ble_svc_gap.h"
 #endif
-#ifdef MODULE_BLUETIL_AD
-#include <net/bluetil/ad.h>
-#endif
 
-#ifdef MODULE_SUIT_TRANSPORT
-#include "suit/transport/coap.h"
+/* drivers */
+#ifdef MODULE_MICROBIT
+#include "microbit.h"
 #endif
-
 #ifdef MODULE_WS281X
 #include "ws281x_params.h"
 #include "ws281x.h"
-#endif
-
-#ifdef MODULE_MICROBIT
-#include "microbit.h"
 #endif
 
 // Note that while the actual definitions are always in board.h, this defines
