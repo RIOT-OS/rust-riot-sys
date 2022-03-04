@@ -4,6 +4,7 @@
 #include <msg.h>
 #endif
 #include <mutex.h>
+#include <panic.h>
 #ifdef MODULE_CORE_THREAD_FLAGS
 #include <thread_flags.h>
 #endif
