@@ -1,5 +1,8 @@
 /* core libraries */
 #include <irq.h>
+#ifdef MODULE_CORE_MSG
+#include <msg.h>
+#endif
 #include <mutex.h>
 #ifdef MODULE_CORE_THREAD_FLAGS
 #include <thread_flags.h>
