@@ -522,6 +522,11 @@ fn main() {
         ("pub const UNIT_T:", "phydat_unit_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17660, available after 2022.01
         ("vfs_iterate_mount_dirs", "vfs_iterate_mount_dirs"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17758 retrofitting it for the change in
+        // https://github.com/RIOT-OS/RIOT/pull/17351, available TBD
+        ("ztimer_periodic_callback_t", "ztimer_periodic_callback_t"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17544, available TBD
+        ("coap_build_pkt_t", "coap_build_pkt_t"),
     ];
     for (needle, name) in markers {
         if bindgen_output.contains(needle) {
