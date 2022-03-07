@@ -112,6 +112,12 @@
 #ifdef MODULE_GNRC_ICMPV6
 #include "net/gnrc/icmpv6.h"
 #endif
+#ifdef MODULE_NANOCOAP
+#include <net/nanocoap.h>
+#endif
+#ifdef MODULE_NANOCOAP_SOCK
+#include <net/nanocoap_sock.h>
+#endif
 #ifdef MODULE_SOCK
 #include <net/sock.h>
 #endif
