@@ -78,7 +78,7 @@ macro_rules! llvm_asm {
     ("csrw mstatus, $0" : : "r" ($state:ident) : "memory" : "volatile") => {
         core::arch::asm!("csrw mstatus, {}", in(reg) $state);
     };
-    ("csrr $0, mstatus" : : "=r" ($state:ident) : "memory" : "volatile") => {
+    ("csrr $0, mstatus" : "=r" ($state:ident) : : "memory" : "volatile") => {
         core::arch::asm!("csrr {}, mstatus", out(reg) $state);
     };
     ($($x:tt)*) => {{
