@@ -349,6 +349,9 @@ fn main() {
     // C2Rust still generates old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
     rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
 
+    // Workaround for https://github.com/immunant/c2rust/issues/372
+    rustcode = rustcode.replace("::core::intrinsics::", "crate::intrinsics_replacements::");
+
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_KEEP_EXTERN_TYPES");
     if env::var("CARGO_FEATURE_KEEP_EXTERN_TYPES").is_err() {
         // There's only one `pub type` usually, and that breaks use on stable, and src/inline.rs has a

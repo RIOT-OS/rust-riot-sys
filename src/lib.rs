@@ -74,11 +74,11 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-// Produced by c2rust for riscv32imac, eg. on hifive1 board (at least with TOOLCHAIN=llvm)
-#![cfg_attr(target_arch = "riscv32", feature(core_intrinsics))]
 #![cfg_attr(feature = "keep-extern-types", feature(extern_types))]
 
 pub mod libc;
+
+mod intrinsics_replacements;
 
 mod bindgen;
 pub mod inline;
