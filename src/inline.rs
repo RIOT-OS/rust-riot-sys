@@ -80,7 +80,7 @@ macro_rules! llvm_asm {
     };
     ("csrr $0, mstatus" : : "=r" ($state:ident) : "memory" : "volatile") => {
         core::arch::asm!("csrr {}, mstatus", out(reg) $state);
-    }
+    };
     ($($x:tt)*) => {{
         llvm_asm_is_not_supported_any_more();
         unreachable!()
