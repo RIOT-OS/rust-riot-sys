@@ -563,6 +563,10 @@ fn main() {
             println!("cargo:MARKER_{}=1", name);
         }
     }
+
+    // let downstream crates know we're building for riot-rs
+    #[cfg(feature = "riot-rs")]
+    println!("cargo:MARKER_riot_rs=1");
 }
 
 #[cfg(feature = "riot-rs")]
