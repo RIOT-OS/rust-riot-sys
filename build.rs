@@ -473,6 +473,12 @@ fn main() {
         "thread_getpid",
         "thread_get_unchecked",
         "ztimer_spin",
+        // because when defined through RIOT's af.h these are enums and thus unix_af_t prefixed.
+        "AF_UNSPEC",
+        "AF_UNIX",
+        "AF_PACKET",
+        "AF_INET",
+        "AF_INET6",
     ]
     .iter()
     .map(|name| name.to_string())
@@ -482,7 +488,9 @@ fn main() {
     }
     let toplevel_from_inline: Vec<String> = toplevel_from_inline
         .drain(..)
-        .filter(|s: &String| rustcode.contains(&format!(" {}(", s)))
+        .filter(|s: &String| {
+            rustcode.contains(&format!(" {}(", s)) || rustcode.contains(&format!(" {}: ", s))
+        })
         .collect();
     let toplevel_from_inline_filename = out_path.join("toplevel_from_inline.rs");
     std::fs::File::create(toplevel_from_inline_filename)
