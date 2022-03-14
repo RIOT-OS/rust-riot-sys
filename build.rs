@@ -544,6 +544,7 @@ fn main() {
         ("ztimer_periodic_callback_t", "ztimer_periodic_callback_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17544, available TBD
         ("coap_build_pkt_t", "coap_build_pkt_t"),
+        ("gcoap_resource_t", "gcoap_resource_t"),
     ];
     for (needle, name) in markers {
         if bindgen_output.contains(needle) {
