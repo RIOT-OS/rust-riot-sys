@@ -8,13 +8,13 @@
 use core::sync::atomic::{AtomicU32, Ordering};
 
 #[cfg(target_arch = "riscv32")]
-fn atomic_and_relaxed(dst: *mut u32, src: u32) -> u32 {
+pub(crate) fn atomic_and_relaxed(dst: *mut u32, src: u32) -> u32 {
     let actual_atomic = unsafe { &*(dst as *mut AtomicU32) };
     actual_atomic.fetch_and(src, Ordering::Relaxed)
 }
 
 #[cfg(target_arch = "riscv32")]
-fn atomic_or_relaxed(dst: *mut u32, src: u32) -> u32 {
+pub(crate) fn atomic_or_relaxed(dst: *mut u32, src: u32) -> u32 {
     let actual_atomic = unsafe { &*(dst as *mut AtomicU32) };
     actual_atomic.fetch_or(src, Ordering::Relaxed)
 }
