@@ -4,6 +4,7 @@
 //! necessary. They can't be defined for all platforms, as Cortex-M0 don't have this operation.
 //! (But then again, they're not needed, as theire RIOT C code can't contain these operations).
 
+#[cfg(target_arch = "riscv32")]
 use core::sync::atomic::{AtomicU32, Ordering};
 
 #[cfg(target_arch = "riscv32")]
