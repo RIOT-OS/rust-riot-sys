@@ -22,6 +22,7 @@ c2rust-bitfields = { version = "0.3", features = ["no_std"] }
 
 # optionally use RIOT-rs's riot-build
 riot-build = { version = "0.1.0", optional = true }
+riot-rs-core = { version = "0.1.0", optional = true }
 
 [build-dependencies]
 bindgen = "^0.59.1"
@@ -37,4 +38,4 @@ regex = "1"
 keep-extern-types = []
 
 # this needs to be set to build together with RIOT-rs.
-riot-rs = [ "riot-build", "keep-extern-types" ]
+riot-rs = [ "riot-build", "riot-rs-core", "keep-extern-types" ]

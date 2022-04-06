@@ -85,3 +85,7 @@ pub mod inline;
 
 include!(concat!(env!("OUT_DIR"), "/toplevel_from_inline.rs"));
 pub use bindgen::*;
+
+// re-export RIOT-rs core (used by riot-wrappers)
+#[cfg(feature = "riot-rs")]
+pub use riot_rs_core;
