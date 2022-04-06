@@ -13,10 +13,22 @@ fn main() {
     let mut cflags;
 
     #[cfg(not(feature = "riot-rs"))]
+    if env::var("BUILDING_RIOT_RS").is_ok() {
+        println!("");
+        println!("ERROR: riot-sys seems to be built for RIOT-rs (BUILDING_RIOT_RS is set). Please enable the 'riot-rs' feature.");
+        println!(
+            "To do this, make the main application crate depend on `riot-sys` with feature `riot-rs`."
+        );
+        println!("");
+        std::process::exit(1);
+    }
+
+    #[cfg(not(feature = "riot-rs"))]
     let compile_commands_json = "RIOT_COMPILE_COMMANDS_JSON";
     #[cfg(feature = "riot-rs")]
     let compile_commands_json = "DEP_RIOT_BUILD_COMPILE_COMMANDS_JSON";
 
+    println!("cargo:rerun-if-env-changed=BUILDING_RIOT_RS");
     println!("cargo:rerun-if-env-changed=RIOT_CC");
     println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
     println!("cargo:rerun-if-env-changed={}", &compile_commands_json);
