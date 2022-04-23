@@ -65,6 +65,9 @@ bit cumbersome as it requires a particular nightly version:
 
 [C2Rust]: https://c2rust.com/
 
+Usually, the `c2rust` binary is selected through the `PATH` environment variable.
+The `C2RUST` environment variable can be used to override this.
+
 ---
 
 The types and constants of RIOT are translated in two forms:

@@ -309,17 +309,21 @@ fn main() {
     let compile_commands_name = compile_commands_name
         .to_str()
         .expect("Inexpressible path name");
-    let c2rust_version = std::process::Command::new("c2rust")
+
+    println!("cargo:rerun-if-env-changed=C2RUST");
+    println!("cargo:rerun-if-env-changed=PATH");
+    let c2rust = std::env::var("C2RUST").unwrap_or_else(|_| "c2rust".to_string());
+    let c2rust_version = std::process::Command::new(&c2rust)
         .args(&["--version"])
         .output()
         .expect("C2Rust version check did not complete")
         .stdout;
     let c2rust_version = String::from_utf8_lossy(&c2rust_version);
-    print!("C2Rust version check: {}", c2rust_version);
+    print!("C2Rust binary {}, version: {}", c2rust, c2rust_version);
     // FIXME: This does not rat on the used files. Most are probably included from riot-bindgen.h
     // anyway, tough.
     println!("Running C2Rust on {}", compile_commands_name);
-    let status = std::process::Command::new("c2rust")
+    let status = std::process::Command::new(&c2rust)
         .args(&[
             "transpile",
             compile_commands_name,
