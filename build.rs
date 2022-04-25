@@ -374,9 +374,6 @@ fn main() {
         rustcode = rustcode.replace("\n    pub type __lock;", "");
     }
 
-    // This only matches when c2rust is built to even export body-less functions
-    rustcode = rustcode.replace("    #[no_mangle]\n    fn ", "    #[no_mangle]\n    pub fn ");
-
     // Replace the function declarations with ... usually something pub, but special considerations
     // may apply
     let mut rustcode_functionsreplaced = String::new();
@@ -500,7 +497,11 @@ fn main() {
     let toplevel_from_inline: Vec<String> = toplevel_from_inline
         .drain(..)
         .filter(|s: &String| {
-            rustcode.contains(&format!(" {}(", s)) || rustcode.contains(&format!(" {}: ", s))
+            // Not just matching on `pub fn`: `irq_disable` on native is visible as `extern "C" {
+            // fn irq_disable(); }`, and that should not trigger going through C2Rust.
+            rustcode.contains(&format!("pub fn {}(", s))
+                || rustcode.contains(&format!("unsafe fn {}(", s))
+                || rustcode.contains(&format!(" {}: ", s))
         })
         .collect();
     let toplevel_from_inline_filename = out_path.join("toplevel_from_inline.rs");
