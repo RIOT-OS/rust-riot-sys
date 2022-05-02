@@ -378,8 +378,10 @@ fn main() {
 
     rustcode = rustcode.replace("use ::libc;\n", "");
 
-    // C2Rust still generates old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
-    rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
+    if !c2rust_version.contains("+git-for-riot") && c2rust_version.contains("C2Rust 0.15") {
+        // Old C2Rust still generate old-style ASM -- workaround for https://github.com/immunant/c2rust/issues/306
+        rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
+    }
 
     // Workaround for https://github.com/immunant/c2rust/issues/372
     rustcode = rustcode.replace("::core::intrinsics::", "crate::intrinsics_replacements::");
