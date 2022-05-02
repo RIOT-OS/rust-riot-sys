@@ -203,14 +203,19 @@ fn main() {
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
     let macro_functions = [
-        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", "void", true),
-        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", "void", true),
-        ("MUTEX_INIT", "mutex_t", "void", true),
+        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", None, true),
+        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", None, true),
+        ("MUTEX_INIT", "mutex_t", None, true),
         // neither C2Rust nor bindgen understand the cast without help
-        ("STATUS_NOT_FOUND", "thread_status_t", "void", true),
+        ("STATUS_NOT_FOUND", "thread_status_t", None, true),
         // If any board is ever added that works completely differently, this'll have to go behind
         // a feature-gate
-        ("GPIO_PIN", "gpio_t", "unsigned port, unsigned pin", true),
+        (
+            "GPIO_PIN",
+            "gpio_t",
+            Some("unsigned port, unsigned pin"),
+            true,
+        ),
     ];
     let mut macro_functions: Vec<_> = macro_functions
         .iter()
@@ -219,9 +224,9 @@ fn main() {
         })
         .collect();
     for i in 0..8 {
-        macro_functions.push((format!("LED{}_ON", i), "void", "void", false));
-        macro_functions.push((format!("LED{}_OFF", i), "void", "void", false));
-        macro_functions.push((format!("LED{}_TOGGLE", i), "void", "void", false));
+        macro_functions.push((format!("LED{}_ON", i), "void", None, false));
+        macro_functions.push((format!("LED{}_OFF", i), "void", None, false));
+        macro_functions.push((format!("LED{}_TOGGLE", i), "void", None, false));
     }
 
     let mut c_code = String::new();
@@ -231,6 +236,20 @@ fn main() {
         .expect("Failed to read riot-c2rust.h");
 
     for (macro_name, return_type, args, _is_const) in macro_functions.iter() {
+        let argnames = match args {
+            None => "".to_string(),
+            Some("void") => "()".to_string(),
+            Some(args) => format!(
+                "({})",
+                args.split(", ")
+                    .map(|s| &s[s.find(" ").expect("Non-void args need to have names")..])
+                    // Not really essential concepturally, but .join is only available on
+                    // slices, not on Iterator
+                    .collect::<Vec<&str>>()
+                    .join(", ")
+            ),
+        };
+
         // The ifdef guards make errors easier to spot: A "cannot find function
         // `macro_SOCK_IPV6_EP_ANY` in crate `riot_sys`" can lead one to check whether
         // SOCK_IPV6_EP_ANY is really defined, whereas if the macro is missing, C2Rust would
@@ -246,13 +265,14 @@ fn main() {
 
 #ifdef {macro_name}
 {return_type} macro_{macro_name}({args}) {{
-    {macro_name};
+    {macro_name}{argnames};
 }}
 #endif
                 ",
                 return_type = return_type,
                 macro_name = macro_name,
-                args = args,
+                args = args.unwrap_or("void"),
+                argnames = argnames,
             )
         } else {
             write!(
@@ -261,14 +281,15 @@ fn main() {
 
 #ifdef {macro_name}
 {return_type} macro_{macro_name}({args}) {{
-    {return_type} result = {macro_name};
+    {return_type} result = {macro_name}{argnames};
     return result;
 }}
 #endif
                 ",
                 return_type = return_type,
                 macro_name = macro_name,
-                args = args,
+                args = args.unwrap_or("void"),
+                argnames = argnames,
             )
         }
         .unwrap();
