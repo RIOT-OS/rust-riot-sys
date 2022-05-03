@@ -214,7 +214,9 @@ fn main() {
             "GPIO_PIN",
             "gpio_t",
             Some("unsigned port, unsigned pin"),
-            true,
+            // would be nice to have them const, but on boards like samd21-xpro that'd require
+            // several nightly features (const_ptr_offset, const_mut_refs).
+            false,
         ),
     ];
     let mut macro_functions: Vec<_> = macro_functions
