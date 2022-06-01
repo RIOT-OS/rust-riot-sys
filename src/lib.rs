@@ -77,6 +77,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
+#![warn(unaligned_references)]
 #![cfg_attr(feature = "keep-extern-types", feature(extern_types))]
 
 pub mod libc;
