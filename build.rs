@@ -181,6 +181,39 @@ fn main() {
         .use_core()
         .ctypes_prefix("libc")
         .impl_debug(true)
+        // Structs listed here are Packed and thus need impl_debug, but also contain non-Copy
+        // members.
+        //
+        // This is a workaround for <https://github.com/rust-lang/rust-bindgen/issues/2221>; once
+        // that is fixed and our bindgen is updated, these can just go away again.
+        //
+        // If you see any errors like
+        //
+        // ```
+        // error: reference to packed field is unaligned
+        //      --> .../out/bindings.rs:79797:13
+        //       |
+        // 79797 |             self.opcode, self.length, self.data
+        //       |             ^^^^^^^^^^^
+        //       |
+        //       = note: `#[deny(unaligned_references)]` on by default
+        //       = warning: this was previously accepted by the compiler but is being phased out; it will become a hard error in a future release!
+        //       = note: for more information, see issue #82523 <https://github.com/rust-lang/rust/issues/82523>
+        //       = note: fields of packed structs are not properly aligned, and creating a misaligned reference is undefined behavior (even if that reference is never dereferenced)
+        //       = help: copy the field contents to a local variable, or replace the reference with a raw pointer and use `read_unaligned`/`write_unaligned` (loads and stores via `*p` must be properly aligned even when using raw pointers)
+        //       = note: this error originates in the macro `$crate::format_args` (in Nightly builds, run with -Z macro-backtrace for more info)
+        // ```
+        //
+        // please add the offending struct in here; if existing code depends on the Debug
+        // implementation, you may add a Debug implementation (that possibly is just a dummy, for
+        // in these cases it *is* hard to implement showing all details) to this crate for the
+        // duration of these workarounds.
+        .no_debug("ble_hci_cmd")
+        .no_debug("ble_hci_ev_command_complete")
+        .no_debug("ble_hci_ev_le_subev_big_complete")
+        .no_debug("ble_hci_ev_le_subev_big_sync_established")
+        .no_debug("ble_hci_ev_le_subev_periodic_adv_rpt")
+        .no_debug("ext_adv_report")
         .derive_default(true)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
