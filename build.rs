@@ -589,11 +589,13 @@ fn main() {
         // moved up and get an "available after" release once merged.
 
         // See https://github.com/RIOT-OS/RIOT/pull/17758 retrofitting it for the change in
-        // https://github.com/RIOT-OS/RIOT/pull/17351, available TBD
+        // https://github.com/RIOT-OS/RIOT/pull/17351, available in 2022.04
         ("ztimer_periodic_callback_t", "ztimer_periodic_callback_t"),
-        // See https://github.com/RIOT-OS/RIOT/pull/17544, available TBD
+        // See https://github.com/RIOT-OS/RIOT/pull/17544, never merged
         ("coap_build_pkt_t", "coap_build_pkt_t"),
         ("gcoap_resource_t", "gcoap_resource_t"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17957, available TBD
+        ("coap_request_ctx_t", "coap_request_ctx_t"),
     ];
     for (needle, name) in markers {
         if bindgen_output.contains(needle) {
