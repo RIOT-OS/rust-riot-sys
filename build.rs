@@ -600,18 +600,18 @@ fn main() {
 
     let markers = [
         // See https://github.com/RIOT-OS/RIOT/pull/17569, available after 2022.01
-        (InCode("pub const UNIT_T:"), "phydat_unit_t"),
+        (Always, "phydat_unit_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17660, available after 2022.01
-        (NameInCode, "vfs_iterate_mount_dirs"),
+        (Always, "vfs_iterate_mount_dirs"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17758 retrofitting it for the change in
+        // https://github.com/RIOT-OS/RIOT/pull/17351, available in 2022.04
+        (Always, "ztimer_periodic_callback_t"),
         // Experimental markers
         //
         // These are not merged in RIOT yet, but promising candidates; if there are any substantial
         // changes to them, their marker name will be bumped, but it is expected that they will be
         // moved up and get an "available after" release once merged.
 
-        // See https://github.com/RIOT-OS/RIOT/pull/17758 retrofitting it for the change in
-        // https://github.com/RIOT-OS/RIOT/pull/17351, available in 2022.04
-        (NameInCode, "ztimer_periodic_callback_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17544
         (Never, "coap_build_pkt_t"),
         (Never, "gcoap_resource_t"),
