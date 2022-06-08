@@ -610,28 +610,55 @@ fn main() {
     // on RIOT versions that don't have the T type yet -- at least for as long as it supports
     // 2022.01).
 
+    enum MarkerCondition {
+        /// This has been around for long enough that no actual check is performed any more, the
+        /// marker is just always set. Markers are set to that when the oldest supported RIOT
+        /// version has the new behavior; users of riot-sys may stop checking for the marker when
+        /// they depend on a riot-sys version that has it on Always.
+        Always,
+        /// A marker that has been around for some time during while preparing some PRs, but never
+        /// was merged, and the PR was abandoned.
+        ///
+        /// This is equivalent to not having the marker in the first place, except that their
+        /// presence serves as a reminder to not reuse that marker name.
+        Never,
+        /// A marker that is set if the given string is found in the bindgen output.
+        InCode(&'static str),
+        /// A marker that is set if its name is found in the bindgen output. Shorthand for
+        /// Text(name).
+        NameInCode,
+    }
+
+    use MarkerCondition::*;
+
     let markers = [
         // See https://github.com/RIOT-OS/RIOT/pull/17569, available after 2022.01
-        ("pub const UNIT_T:", "phydat_unit_t"),
+        (Always, "phydat_unit_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17660, available after 2022.01
-        ("vfs_iterate_mount_dirs", "vfs_iterate_mount_dirs"),
+        (Always, "vfs_iterate_mount_dirs"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17758 retrofitting it for the change in
+        // https://github.com/RIOT-OS/RIOT/pull/17351, available in 2022.04
+        (Always, "ztimer_periodic_callback_t"),
         // Experimental markers
         //
         // These are not merged in RIOT yet, but promising candidates; if there are any substantial
         // changes to them, their marker name will be bumped, but it is expected that they will be
         // moved up and get an "available after" release once merged.
 
-        // See https://github.com/RIOT-OS/RIOT/pull/17758 retrofitting it for the change in
-        // https://github.com/RIOT-OS/RIOT/pull/17351, available in 2022.04
-        ("ztimer_periodic_callback_t", "ztimer_periodic_callback_t"),
-        // See https://github.com/RIOT-OS/RIOT/pull/17544, never merged
-        ("coap_build_pkt_t", "coap_build_pkt_t"),
-        ("gcoap_resource_t", "gcoap_resource_t"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17544
+        (Never, "coap_build_pkt_t"),
+        (Never, "gcoap_resource_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17957, available TBD
-        ("coap_request_ctx_t", "coap_request_ctx_t"),
+        (NameInCode, "coap_request_ctx_t"),
     ];
     for (needle, name) in markers {
-        if bindgen_output.contains(needle) {
+        let found = match needle {
+            InCode(s) => bindgen_output.contains(s),
+            NameInCode => bindgen_output.contains(name),
+            Always => true,
+            Never => false,
+        };
+        if found {
             println!("cargo:MARKER_{}=1", name);
         }
     }
