@@ -612,9 +612,9 @@ fn main() {
         // See https://github.com/RIOT-OS/RIOT/pull/17758 retrofitting it for the change in
         // https://github.com/RIOT-OS/RIOT/pull/17351, available in 2022.04
         (NameInCode, "ztimer_periodic_callback_t"),
-        // See https://github.com/RIOT-OS/RIOT/pull/17544, never merged
-        (NameInCode, "coap_build_pkt_t"),
-        (NameInCode, "gcoap_resource_t"),
+        // See https://github.com/RIOT-OS/RIOT/pull/17544
+        (Never, "coap_build_pkt_t"),
+        (Never, "gcoap_resource_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17957, available TBD
         (NameInCode, "coap_request_ctx_t"),
     ];
