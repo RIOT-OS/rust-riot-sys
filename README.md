@@ -68,6 +68,16 @@ bit cumbersome as it requires a particular nightly version:
 Usually, the `c2rust` binary is selected through the `PATH` environment variable.
 The `C2RUST` environment variable can be used to override this.
 
+### Versioning
+
+`riot-sys` is versioned using SemVer,
+and efforts are made to not make breaking changes even while in the 0.x phase.
+Note that as it passes on RIOT internals,
+any of the SemVer guarantees only hold when built on the *same* RIOT --
+once the underlying C code is changed, all bets are off.
+Users of `riot-rs` can introspect its markers (see `build.rs`)
+to influence which symbols to use.
+
 ---
 
 The types and constants of RIOT are translated in two forms:
