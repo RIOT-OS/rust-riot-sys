@@ -543,6 +543,7 @@ fn main() {
         "irq_is_in",
         "irq_restore",
         "mutex_trylock",
+        "mutex_lock",
         "pid_is_valid",
         "shell_run_forever",
         "sock_udp_recv",
