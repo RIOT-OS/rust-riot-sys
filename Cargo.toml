@@ -1,6 +1,6 @@
 [package]
 name = "riot-sys"
-version = "0.7.8"
+version = "0.7.9"
 authors = ["Christian Amsüss <chrysn@fsfe.org>"]
 edition = "2018"
 
