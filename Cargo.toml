@@ -20,8 +20,8 @@ c2rust-asm-casts = "0.2"
 c2rust-bitfields = { version = "0.3", features = ["no_std"] }
 
 # optionally use RIOT-rs's riot-build
-riot-build = { version = "0.1.0", optional = true }
-riot-rs-core = { version = "0.1.0", optional = true }
+riot-build = { version = "< 0.2.0", optional = true }
+riot-rs-core = { version = "< 0.2.0", optional = true }
 
 [build-dependencies]
 bindgen = "^0.60.1"
