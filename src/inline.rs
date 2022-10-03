@@ -87,7 +87,7 @@ macro_rules! llvm_asm {
     }};
 }
 
-use cty as libc;
+use core::ffi as libc;
 
 use c2rust_bitfields::*;
 
