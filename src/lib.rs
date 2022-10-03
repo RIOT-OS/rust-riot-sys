@@ -89,6 +89,7 @@
 #![allow(non_snake_case)]
 #![cfg_attr(feature = "keep-extern-types", feature(extern_types))]
 
+#[deprecated(note = "Use core::ffi types directly")]
 pub mod libc;
 
 mod intrinsics_replacements;
