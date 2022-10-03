@@ -179,7 +179,7 @@ fn main() {
         .header("riot-bindgen.h")
         .clang_args(&cflags)
         .use_core()
-        .ctypes_prefix("libc")
+        .ctypes_prefix("core::ffi")
         .impl_debug(true)
         // Structs listed here are Packed and thus need impl_debug, but also contain non-Copy
         // members.

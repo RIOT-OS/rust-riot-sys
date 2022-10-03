@@ -3,6 +3,7 @@ name = "riot-sys"
 version = "0.7.9"
 authors = ["Christian Amsüss <chrysn@fsfe.org>"]
 edition = "2018"
+rust-version = "1.64"
 
 description = "Rust FFI wrappers for the RIOT operating system"
 documentation = "https://rustdoc.etonomy.org/riot_sys/"
@@ -14,7 +15,6 @@ license = "LGPL-2.1"
 links = "riot-sys"
 
 [dependencies]
-cty = "^0.2"
 c2rust-asm-casts = "0.2"
 # Relevant for some boards like the wemos-zero
 c2rust-bitfields = { version = "0.3", features = ["no_std"] }
