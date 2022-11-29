@@ -59,6 +59,38 @@
 //! Users of `riot-rs` can introspect its markers (see `build.rs`)
 //! to influence which symbols to use.
 //!
+//! ### Markers
+//!
+//! Some decisions of downstream crates need to depend on whether some feature is around in
+//! RIOT. For many things that's best checked on module level, but some minor items have no
+//! module to mark the feature, and checking for versions by numers is not fine-grained enough,
+//! so it's easiest to check for concrete strings in the bindgen output.
+//!
+//! The `build.rs` of this crate contains a list of marker conditions. These lead to `MARKER_foo=1`
+//! items emitted that are usable as `DEP_RIOT_SYS_MARKER_foo=1` by crates that explicitly `links =
+//! "riot-sys"`. They are stable in that they'll only go away in a breaking riot-sys version;
+//! downstream users likely stop using them earlier because they sooner or later stop supporting
+//! old RIOT versions.
+//!
+//! For example, in [PR #17957](https://github.com/RIOT-OS/RIOT/pull/17957), an argument to a
+//! particular handler function changed fundamentally; no amount of `.into()` would allow writing
+//! sensible abstractions. The marker `coap_request_ctx_t` was introduced, and is present
+//! automatically on all RIOT versions that have that particular pull request merged. Code in
+//! `riot-wrappers` uses conditions like `#[cfg(marker_coap_request_ctx_t)] ` to decide whether to
+//! use the old or the new conventions.
+//!
+//! These markers are currently checked against bindgen's output, but could query any property
+//! that riot-sys has access to. The markers are defined in terms of some change having happened
+//! in RIOT; the way they are tested for can change. (In particular, when riot-sys stops
+//! supporting an older RIOT version, it can just always emit that marker).
+//!
+//! Crates building on this should preferably not alter their own APIs depending on these,
+//! because that would add extra (and hard-to-track) dimensions to them. If they can, they
+//! should provide a unified view and degrade gracefully. (For example, riot-wrappers has the
+//! unit `T` of the `phydat_unit_t` in its enum, but converts it to the generic unspecified unit
+//! on RIOT versions that don't have the T type yet -- at least for as long as it supports
+//! 2022.01).
+//!
 //! ---
 //!
 //! The types and constants of RIOT are translated in two forms:
