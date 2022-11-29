@@ -11,6 +11,7 @@ Those bindings are inherently unsafe; it is recommended that their safe
 abstractions in the [riot-wrappers] crate are used in most applications.
 
 For a newcomer's starting point, see [RIOT's documentation on using it with Rust].
+This also contains installation instructions / depenendencies.
 
 [riot-wrappers]: https://crates.io/crates/riot-wrappers
 [RIOT's documentation on using it with Rust]: https://doc.riot-os.org/using-rust.html
@@ -51,22 +52,6 @@ Currently, only a subset of all the RIOT headers is processed; all the relevant
 header files are included in this crate's `riot-headers.h` header file. If you
 need access to more RIOT APIs, more includes can be added there.
 
-### External build dependencies
-
-This crate's operation depends on [C2Rust] being installed.
-As of revision 6674d785, the upstream release is suitable for that. Still, installation is a
-bit cumbersome as it requires a particular nightly version:
-
-    $ git clone https://github.com/immunant/c2rust/
-    $ cd c2rust
-    $ rustup install nightly-2019-12-05
-    $ rustup component add --toolchain nightly-2019-12-05 rustfmt rustc-dev
-    $ cargo +nightly-2019-12-05 install --locked --debug --path c2rust
-
-[C2Rust]: https://c2rust.com/
-
-Usually, the `c2rust` binary is selected through the `PATH` environment variable.
-The `C2RUST` environment variable can be used to override this.
 
 ### Versioning
 
