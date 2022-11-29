@@ -589,28 +589,6 @@ fn main() {
         )
         .expect("Failed to write to toplevel_from_inline.rs");
 
-    // Some decisions of downstream crates need to depend on whether some feature is around in
-    // RIOT. For many things that's best checked on module level, but some minor items have no
-    // module to mark the feature, and checking for versions by numers is not fine-grained enough,
-    // so it's easiest to check for concrete strings in the bindgen output.
-    //
-    // These lead to `MARKER_foo=1` items emitted that are usable as `DEP_RIOT_SYS_MARKER_foo=1` by
-    // crates that explicitly `links = "riot-sys"`. They are stable in that they'll only go away in
-    // a breaking riot-sys version; downstream users likely stop using them earlier because they
-    // sooner or later stop supporting old RIOT versions.
-    //
-    // These markers are currently checked against bindgen's output, but could query any property
-    // that riot-sys has access to. The markers are defined in terms of some change having happened
-    // in RIOT; the way they are tested for can change. (In particular, when riot-sys stops
-    // supporting an older RIOT version, it can just always emit that marker).
-    //
-    // Crates building on this should preferably not alter their own APIs depending on these,
-    // because that would add extra (and hard-to-track) dimensions to them. If they can, they
-    // should provide a unified view and degrade gracefully. (For example, riot-wrappers has the
-    // unit `T` of the `phydat_unit_t` in its enum, but converts it to the generic unspecified unit
-    // on RIOT versions that don't have the T type yet -- at least for as long as it supports
-    // 2022.01).
-
     enum MarkerCondition {
         /// This has been around for long enough that no actual check is performed any more, the
         /// marker is just always set. Markers are set to that when the oldest supported RIOT
