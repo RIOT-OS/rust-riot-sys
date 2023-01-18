@@ -184,6 +184,14 @@
 #include "ws281x.h"
 #endif
 
+/* wolfSSL */
+#if defined(MODULE_WOLFSSL) && !defined(IS_C2RUST)
+#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/sha256.h>
+#include <wolfssl/ssl.h>
+#include <sock_tls.h>
+#endif
+
 // Note that while the actual definitions are always in board.h, this defines
 // the fallback macros that make sure that in the LED macros' absence,
 // fallbacks are there.
