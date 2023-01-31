@@ -61,6 +61,14 @@ fn main() {
         let mut consensus_cflag_groups: Option<Vec<Vec<&str>>> = None;
         for entry in parsed.iter() {
             if let Some(consensus_cc) = consensus_cc.as_ref() {
+                // Prevent c++ flags from beeing used.
+                // For example esp32 uses C++ internally.
+                // Since bindings to C++ are not supported by C2Rust
+                // we can savely kick it out anyway.
+                if entry.arguments[0] == "clang++" {
+                    continue;
+                }
+
                 assert!(consensus_cc == &entry.arguments[0])
             } else {
                 consensus_cc = Some(&entry.arguments[0]);
