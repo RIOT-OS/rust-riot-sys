@@ -375,8 +375,16 @@ fn main() {
 
     let arguments: Vec<_> = core::iter::once("any-cc".to_string())
         .chain(cflags.into_iter())
+        .chain({
+            if cfg!(feature = "dummy-atomic-definitions") {
+                vec!["-DDUMMY_ATOMICS=1".to_string()]
+            } else {
+                vec![]
+            }
+        })
         .chain(core::iter::once(c2rust_infile.to_string()))
         .collect();
+
     let compile_commands = json!([{
         "arguments": arguments,
         "directory": out_path,

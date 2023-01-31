@@ -36,5 +36,12 @@ regex = "1"
 # `extern_types`.
 keep-extern-types = []
 
+# This prevents the `undef` of the dummy atomic definitions in
+# `riot-c2rust.h` in case `stdatomic.h` is somewhere included.
+# Note that these definitions are not realy atomics but placeholders.
+# Thus a programm relying on the atomicity of the transpiled Rust structs
+# will probably not work as intended.
+dummy-atomic-definitions = []
+
 # this needs to be set to build together with RIOT-rs.
 riot-rs = [ "riot-build", "riot-rs-core", "keep-extern-types" ]
