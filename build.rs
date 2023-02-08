@@ -463,11 +463,26 @@ fn main() {
     if env::var("CARGO_FEATURE_KEEP_EXTERN_TYPES").is_err() {
         // There's only one `pub type` usually, and that breaks use on stable, and src/inline.rs has a
         // workaround for that
-        rustcode = rustcode.replace("\n    pub type __locale_t;", "");
-        rustcode = rustcode.replace("\n    pub type _IO_wide_data;", "");
-        rustcode = rustcode.replace("\n    pub type _IO_codecvt;", "");
-        rustcode = rustcode.replace("\n    pub type _IO_marker;", "");
-        rustcode = rustcode.replace("\n    pub type __lock;", "");
+        let replacements = [
+            ("\n    pub type __locale_t;", ""),
+            ("\n    pub type _IO_wide_data;", ""),
+            ("\n    pub type _IO_codecvt;", ""),
+            ("\n    pub type _IO_marker;", ""),
+            ("\n    pub type __lock;", ""),
+        ];
+
+        let mut old_len = rustcode.len();
+
+        for (reg, repl) in replacements {
+            rustcode = rustcode.replace(reg, repl);
+
+            if rustcode.len() != old_len {
+                eprintln!("Could not remove {reg} from generated rustcode.\
+This might lead to duplicate definitions. Consider using cargo feature \"keep-extern-types\" if this causes problems")
+            }
+
+            old_len = rustcode.len();
+        }
     }
 
     // Replace the function declarations with ... usually something pub, but special considerations
