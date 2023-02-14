@@ -263,6 +263,16 @@ fn main() {
             // several nightly features (const_ptr_offset, const_mut_refs).
             false,
         ),
+        // These are bound to the signature already in periph_init.
+        ("I2C_DEV", "i2c_t", Some("unsigned num"), false),
+        ("SPI_DEV", "spi_t", Some("unsigned num"), false),
+        // No good source on why this sould have a fixed signature, but at this point it's a
+        // pattern.
+        ("UART_DEV", "uart_t", Some("unsigned num"), false),
+        ("PWM_DEV", "pwm_t", Some("unsigned num"), false),
+        ("ADC_DEV", "adc_t", Some("unsigned num"), false),
+        ("TIMER_DEV", "timer_t", Some("unsigned num"), false),
+        ("QDEC_DEV", "qdec_t", Some("unsigned num"), false),
     ];
     let mut macro_functions: Vec<_> = macro_functions
         .iter()
