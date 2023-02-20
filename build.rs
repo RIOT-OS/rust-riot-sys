@@ -639,6 +639,15 @@ fn main() {
         (Never, "gcoap_resource_t"),
         // See https://github.com/RIOT-OS/RIOT/pull/17957, available TBD
         (NameInCode, "coap_request_ctx_t"),
+        // These are funny because they're not really representative of versions of RIOT, but
+        // really of configuration
+        //
+        // A better long-term solution might be to have riotbuild.h parsed, or to funnel its input
+        // in here through other means.
+        (
+            InCode("pub const CONFIG_AUTO_INIT_ENABLE_DEBUG: u32 = 1;"),
+            "config_auto_init_enable_debug",
+        ),
     ];
     for (needle, name) in markers {
         let found = match needle {
