@@ -159,6 +159,9 @@
 #include <vfs.h>
 #endif
 #endif
+#ifdef MODULE_AUTO_INIT
+#include "auto_init_utils.h"
+#endif
 
 /* packages */
 #ifdef MODULE_NIMBLE_HOST
