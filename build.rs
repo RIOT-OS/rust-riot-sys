@@ -220,8 +220,9 @@ fn main() {
         .expect("Unable to generate bindings");
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let bindgen_outfilename = out_path.join("bindings.rs");
     bindings
-        .write_to_file(out_path.join("bindings.rs"))
+        .write_to_file(&bindgen_outfilename)
         .expect("Couldn't write bindings!");
     // Store for inspection for markers; see there
     let mut bindgen_output = Vec::<u8>::new();
@@ -655,6 +656,11 @@ fn main() {
     // let downstream crates know we're building for riot-rs
     #[cfg(feature = "riot-rs")]
     println!("cargo:MARKER_riot_rs=1");
+
+    println!(
+        "cargo:BINDGEN_OUTPUT_FILE={}",
+        bindgen_outfilename.display()
+    );
 }
 
 #[cfg(feature = "riot-rs")]
