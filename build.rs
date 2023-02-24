@@ -274,6 +274,7 @@ fn main() {
         ("ADC_DEV", "adc_t", Some("unsigned num"), false),
         ("TIMER_DEV", "timer_t", Some("unsigned num"), false),
         ("QDEC_DEV", "qdec_t", Some("unsigned num"), false),
+        ("DAC_LINE", "dac_t", Some("unsigned num"), false),
     ];
     let mut macro_functions: Vec<_> = macro_functions
         .iter()
