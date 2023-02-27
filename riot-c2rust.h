@@ -12,10 +12,12 @@
 #define __builtin_arm_get_fpscr __masked_builtin_arm_get_fpscr
 #define __builtin_arm_set_fpscr __masked_builtin_arm_set_fpscr
 extern int missing_implementation_for_fpscr_in_c2rust_see_issue_345;
-static inline int __masked_builtin_arm_get_fpscr(void) {
+static inline int __masked_builtin_arm_get_fpscr(void)
+{
 	return missing_implementation_for_fpscr_in_c2rust_see_issue_345;
 }
-static inline void __masked_builtin_arm_set_fpscr(int fpscr){
+static inline void __masked_builtin_arm_set_fpscr(int fpscr)
+{
 	missing_implementation_for_fpscr_in_c2rust_see_issue_345 = fpscr;
 }
 
@@ -28,8 +30,8 @@ static inline void __masked_builtin_arm_set_fpscr(int fpscr){
 //
 // Proper fix: resolve https://github.com/immunant/c2rust/issues/293
 #define __CLANG_STDATOMIC_H // for clang
-#define _STDATOMIC_H // for GCC
-#define _STDATOMIC_H_ // for newlib
+#define _STDATOMIC_H		// for GCC
+#define _STDATOMIC_H_		// for newlib
 #define ATOMIC_VAR_INIT(x) x
 // FIXME for all: is it really? We don't rely on it, see below on the explicitly included files.
 #define atomic_bool bool
@@ -94,6 +96,9 @@ static inline void __masked_builtin_arm_set_fpscr(int fpscr){
 // Exported Clang AST was invalid. Check warnings above for unimplemented features.
 // --> /usr/lib/gcc/arm-none-eabi/10.3.1/include/stdatomic.h:69:1
 // [-Wclang-ast]
+//
+// undefs can be disabled by using cargo feature: "dummy-atomic-definitions"
+#ifndef DUMMY_ATOMICS
 #undef __CLANG_STDATOMIC_H
 #undef _STDATOMIC_H_
 #undef _STDATOMIC_H
@@ -135,6 +140,7 @@ static inline void __masked_builtin_arm_set_fpscr(int fpscr){
 #undef atomic_ptrdiff_t
 #undef atomic_intmax_t
 #undef atomic_uintmax_t
+#endif
 
 // Allow header files that pull in lots of odd stuff but don't depend on
 // inlines -- like nimble's host/ble_gap.h -- to opt out of C2Rust altogether
