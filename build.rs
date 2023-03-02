@@ -454,6 +454,7 @@ fn main() {
         rustcode = rustcode.replace("\n    pub type _IO_codecvt;", "");
         rustcode = rustcode.replace("\n    pub type _IO_marker;", "");
         rustcode = rustcode.replace("\n    pub type __lock;", "");
+        rustcode = rustcode.replace("\n    pub type netq_t;", "");
     }
 
     // Replace the function declarations with ... usually something pub, but special considerations

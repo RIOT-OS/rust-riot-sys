@@ -104,5 +104,7 @@ pub type _IO_codecvt = libc::c_void;
 pub type _IO_marker = libc::c_void;
 #[cfg(not(feature = "keep-extern-types"))]
 pub type __lock = libc::c_void;
+#[cfg(not(feature = "keep-extern-types"))]
+pub type netq_t = libc::c_void;
 
 include!(concat!(env!("OUT_DIR"), "/riot_c2rust_replaced.rs"));
