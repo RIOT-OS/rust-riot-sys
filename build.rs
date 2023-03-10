@@ -447,14 +447,29 @@ fn main() {
 
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_KEEP_EXTERN_TYPES");
     if env::var("CARGO_FEATURE_KEEP_EXTERN_TYPES").is_err() {
-        // There's only one `pub type` usually, and that breaks use on stable, and src/inline.rs has a
-        // workaround for that
-        rustcode = rustcode.replace("\n    pub type __locale_t;", "");
-        rustcode = rustcode.replace("\n    pub type _IO_wide_data;", "");
-        rustcode = rustcode.replace("\n    pub type _IO_codecvt;", "");
-        rustcode = rustcode.replace("\n    pub type _IO_marker;", "");
-        rustcode = rustcode.replace("\n    pub type __lock;", "");
-        rustcode = rustcode.replace("\n    pub type netq_t;", "");
+        // For documentation on why we do this, see include in src/inline.rs.
+
+        let pubtypepattern = regex::Regex::new("pub type (?P<type>[a-zA-Z0-9_]+);").unwrap();
+        let pubtypes = pubtypepattern
+            .captures_iter(&rustcode)
+            .map(|m| m.name("type").unwrap().as_str());
+
+        let pubtype_replacements = out_path.join("pubtype_replacements.rs");
+        let mut pubtype_replacements_file = std::fs::File::create(pubtype_replacements)
+            .expect("Failed to create pubtype_replacements.rs");
+
+        for pt in pubtypes {
+            writeln!(
+                pubtype_replacements_file,
+                "pub type {} = [u8; isize::MAX as _];",
+                pt
+            )
+            .expect("Failed to write to pubtype_replacements.rs");
+        }
+
+        rustcode = pubtypepattern
+            .replace_all(&rustcode, "/* $0 */")
+            .to_string();
     }
 
     // Replace the function declarations with ... usually something pub, but special considerations
