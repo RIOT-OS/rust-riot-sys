@@ -98,16 +98,6 @@ use c2rust_bitfields::*;
 // The type is hugely sized to ensure that things crash (or preferably don't build) if at any point
 // Rust code tries to touch an instance of it, eg. by allocating one on the stack or statically.
 #[cfg(not(feature = "keep-extern-types"))]
-pub type __locale_t = [u8; isize::MAX as _];
-#[cfg(not(feature = "keep-extern-types"))]
-pub type _IO_wide_data = [u8; isize::MAX as _];
-#[cfg(not(feature = "keep-extern-types"))]
-pub type _IO_codecvt = [u8; isize::MAX as _];
-#[cfg(not(feature = "keep-extern-types"))]
-pub type _IO_marker = [u8; isize::MAX as _];
-#[cfg(not(feature = "keep-extern-types"))]
-pub type __lock = [u8; isize::MAX as _];
-#[cfg(not(feature = "keep-extern-types"))]
-pub type netq_t = [u8; isize::MAX as _];
+include!(concat!(env!("OUT_DIR"), "/pubtype_replacements.rs"));
 
 include!(concat!(env!("OUT_DIR"), "/riot_c2rust_replaced.rs"));
