@@ -8,6 +8,6 @@
 #![allow(rustdoc::invalid_rust_codeblocks)]
 #![allow(rustdoc::broken_intra_doc_links)]
 
-use crate::libc;
+use core::ffi as libc;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
