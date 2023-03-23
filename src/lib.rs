@@ -7,7 +7,7 @@
 //! abstractions in the [riot-wrappers] crate are used in most applications.
 //!
 //! For a newcomer's starting point, see [RIOT's documentation on using it with Rust].
-//! This also contains installation instructions / depenendencies.
+//! This also contains installation instructions / dependencies.
 //!
 //! [riot-wrappers]: https://crates.io/crates/riot-wrappers
 //! [RIOT's documentation on using it with Rust]: https://doc.riot-os.org/using-rust.html
@@ -22,7 +22,7 @@
 //!
 //! All the relevant information -- including the location of the actually used
 //! RIOT header files and flags influencing the ABI -- is conveyed to `riot-sys` by passing on the
-//! compiler and the CFLAGS. This can either be done by passing in th epath to a "compile commads"
+//! compiler and the CFLAGS. This can either be done by passing in the path to a "compile commads"
 //! file through the `RIOT_COMPILE_COMMANDS` environment variable (accompanied by a
 //! `RIOT_USEMODULES`, as that part of `CFLAGS` is missing from the compile commands), or
 //! alternatively by passing in the C compiler as `RIOT_CC` and the CFLAGS (both their
