@@ -118,6 +118,9 @@
 #ifdef MODULE_NANOCOAP_SOCK
 #include <net/nanocoap_sock.h>
 #endif
+#ifdef MODULE_RANDOM
+#include <random.h>
+#endif
 #ifdef MODULE_SOCK
 #include <net/sock.h>
 #endif
