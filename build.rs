@@ -180,6 +180,10 @@ fn main() {
         .clang_args(&cflags)
         .use_core()
         .ctypes_prefix("libc")
+        // We've traditionally used size_t explicitly and cast it in riot-wrappers; changing this
+        // now (going from bindgen 0.60 to 0.64) would break where it's used (although we still
+        // might instate a type alias for size_t later instead).
+        .size_t_is_usize(false)
         .impl_debug(true)
         // Structs listed here are Packed and thus need impl_debug, but also contain non-Copy
         // members.
