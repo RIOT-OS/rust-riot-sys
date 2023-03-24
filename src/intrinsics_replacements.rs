@@ -5,7 +5,7 @@
 //! (But then again, they're not needed, as theire RIOT C code can't contain these operations).
 
 #[cfg(target_arch = "riscv32")]
-use core::sync::atomic::{AtomicU32, Ordering};
+use portable_atomic::{AtomicU32, Ordering};
 
 #[cfg(target_arch = "riscv32")]
 pub(crate) fn atomic_and_relaxed(dst: *mut u32, src: u32) -> u32 {

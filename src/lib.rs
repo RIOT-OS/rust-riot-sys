@@ -110,6 +110,8 @@ pub mod libc;
 
 mod intrinsics_replacements;
 
+mod critical_section;
+
 mod bindgen;
 pub mod inline;
 
