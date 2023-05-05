@@ -148,6 +148,9 @@
 #ifdef MODULE_SUIT_TRANSPORT_COAP
 #include "suit/transport/coap.h"
 #endif
+#ifdef MODULE_RIOTBOOT_SLOT
+#include "riotboot/slot.h"
+#endif
 #ifdef MODULE_XTIMER
 #include <xtimer.h>
 #endif
