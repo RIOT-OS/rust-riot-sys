@@ -142,6 +142,9 @@
 #ifdef MODULE_PTHREAD
 #include <pthread.h>
 #endif
+#ifdef MODULE_SUIT
+#include "suit.h"
+#endif
 #ifdef MODULE_SUIT_TRANSPORT_COAP
 #include "suit/transport/coap.h"
 #endif
