@@ -153,6 +153,9 @@
 #ifdef MODULE_RIOTBOOT_SLOT
 #include "riotboot/slot.h"
 #endif
+#ifdef MODULE_UUID
+#include "uuid.h"
+#endif
 #ifdef MODULE_XTIMER
 #include <xtimer.h>
 #endif
