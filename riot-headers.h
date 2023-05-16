@@ -144,6 +144,8 @@
 #endif
 #ifdef MODULE_SUIT
 #include "suit.h"
+#include "suit/conditions.h"
+#include "suit/transport/worker.h"
 #endif
 #ifdef MODULE_SUIT_TRANSPORT_COAP
 #include "suit/transport/coap.h"
