@@ -142,8 +142,19 @@
 #ifdef MODULE_PTHREAD
 #include <pthread.h>
 #endif
-#ifdef MODULE_SUIT_TRANSPORT
+#ifdef MODULE_SUIT
+#include "suit.h"
+#include "suit/conditions.h"
+#include "suit/transport/worker.h"
+#endif
+#ifdef MODULE_SUIT_TRANSPORT_COAP
 #include "suit/transport/coap.h"
+#endif
+#ifdef MODULE_RIOTBOOT_SLOT
+#include "riotboot/slot.h"
+#endif
+#ifdef MODULE_UUID
+#include "uuid.h"
 #endif
 #ifdef MODULE_XTIMER
 #include <xtimer.h>
