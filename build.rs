@@ -275,7 +275,7 @@ fn main() {
         // pattern.
         ("UART_DEV", "uart_t", Some("unsigned num"), false),
         ("PWM_DEV", "pwm_t", Some("unsigned num"), false),
-        ("ADC_DEV", "adc_t", Some("unsigned num"), false),
+        ("ADC_LINE", "adc_t", Some("unsigned num"), false),
         ("TIMER_DEV", "timer_t", Some("unsigned num"), false),
         ("QDEC_DEV", "qdec_t", Some("unsigned num"), false),
         ("DAC_LINE", "dac_t", Some("unsigned num"), false),
