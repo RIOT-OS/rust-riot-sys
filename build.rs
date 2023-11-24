@@ -102,6 +102,15 @@ fn main() {
                             keep
                         })
                         .collect();
+                    // Hot-fixing the merging algorithm to even work when an (always to be kept) -I
+                    // is not in the initial set
+                    for group in cflag_groups.drain(..) {
+                        if group[0].starts_with("-I") {
+                            if !consensus_cflag_groups.contains(&group) {
+                                consensus_cflag_groups.push(group);
+                            }
+                        }
+                    }
                 }
             } else {
                 consensus_cflag_groups = Some(cflag_groups);
