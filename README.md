@@ -60,10 +60,16 @@ and efforts are made to not make breaking changes even while in the 0.x phase.
 Note that as it passes on RIOT internals,
 any of the SemVer guarantees only hold when built on the *same* RIOT --
 once the underlying C code is changed, all bets are off.
-Users of `riot-rs` can introspect its markers (see `build.rs`)
-to influence which symbols to use.
+Users of `riot-rs` can introspect the `DEP_RIOT_SYS_...` variables
+that are available to crates that set `links = "riot-sys"`
+to affect the symbols those crates use.
+Typical variables to inspect are `DEP_RIOT_SYS_BINDGEN_OUTPUT_FILE`
+(to determine whether a symbol is imported in the first place, eg. when RIOT renames something)
+and `DEP_RIOT_SYS_CFLAGS` which includes the enabled modules.
 
 #### Markers
+
+**Deprecated, see below**.
 
 Some decisions of downstream crates need to depend on whether some feature is around in
 RIOT. For many things that's best checked on module level, but some minor items have no
