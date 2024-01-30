@@ -119,7 +119,8 @@ fn main() {
         cc = consensus_cc
             .expect("Entries are present in compile_commands.json")
             .to_string();
-        cflags = shlex::join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s));
+        cflags = shlex::try_join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s))
+            .expect("Input is not expected to contain NUL characters");
 
         let usemodule = {
             #[cfg(not(feature = "riot-rs"))]

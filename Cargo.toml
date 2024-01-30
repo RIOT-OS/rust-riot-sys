@@ -25,7 +25,7 @@ riot-rs-core = { version = "< 0.2.0", optional = true }
 
 [build-dependencies]
 bindgen = "^0.64"
-shlex = "^1"
+shlex = "^1.3"
 serde_json = "1"
 serde = { version = "1", features = [ "derive" ] }
 regex = "1"
