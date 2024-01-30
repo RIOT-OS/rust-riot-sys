@@ -642,8 +642,6 @@ fn main() {
         /// This is equivalent to not having the marker in the first place, except that their
         /// presence serves as a reminder to not reuse that marker name.
         Never,
-        /// A marker that is set if the given string is found in the bindgen output.
-        InCode(&'static str),
         /// A marker that is set if its name is found in the bindgen output. Shorthand for
         /// Text(name).
         NameInCode,
@@ -673,7 +671,6 @@ fn main() {
     ];
     for (needle, name) in markers {
         let found = match needle {
-            InCode(s) => bindgen_output.contains(s),
             NameInCode => bindgen_output.contains(name),
             Always => true,
             Never => false,
