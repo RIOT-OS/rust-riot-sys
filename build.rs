@@ -1,5 +1,4 @@
 extern crate bindgen;
-extern crate shlex;
 
 use bindgen::builder;
 use std::env;
@@ -9,9 +8,6 @@ use std::path::PathBuf;
 use serde_json::json;
 
 fn main() {
-    let cc;
-    let mut cflags;
-
     #[cfg(not(feature = "riot-rs"))]
     if env::var("BUILDING_RIOT_RS").is_ok() {
         println!("");
@@ -117,19 +113,19 @@ fn main() {
             consensus_cflag_groups = Some(cflag_groups);
         }
     }
-    cc = consensus_cc
+    let cc = consensus_cc
         .expect("Entries are present in compile_commands.json")
         .to_string();
-    cflags = shlex::try_join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s))
-        .expect("Input is not expected to contain NUL characters");
 
     println!("cargo:rerun-if-changed=riot-bindgen.h");
 
-    let cflags = shlex::split(&cflags).expect("Odd shell escaping in RIOT_CFLAGS");
-    let cflags: Vec<String> = cflags
-        .into_iter()
-        .filter(|x| {
-            match x.as_ref() {
+    let cflags: Vec<&str> = consensus_cflag_groups
+        .unwrap()
+        .iter()
+        .flatten()
+        .map(|v| *v)
+        .filter(|&x| {
+            match x {
                 // These will be in riotbuild.h as well, and better there because bindgen emits
                 // consts for data from files but not from defines (?)
                 x if x.starts_with("-D") => false,
@@ -339,9 +335,9 @@ fn main() {
         panic!("riot-sys only accepts clang style CFLAGS. RIOT can produce them using the compile_commands tool even when using a non-clang compiler, such as GCC.");
     };
 
-    let arguments: Vec<_> = core::iter::once("any-cc".to_string())
+    let arguments: Vec<_> = core::iter::once("any-cc")
         .chain(cflags.into_iter())
-        .chain(core::iter::once(c2rust_infile.to_string()))
+        .chain(core::iter::once(c2rust_infile))
         .collect();
     let compile_commands = json!([{
         "arguments": arguments,
