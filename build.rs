@@ -1,5 +1,4 @@
 extern crate bindgen;
-extern crate shlex;
 
 use bindgen::builder;
 use std::env;
@@ -9,9 +8,6 @@ use std::path::PathBuf;
 use serde_json::json;
 
 fn main() {
-    let cc;
-    let mut cflags;
-
     #[cfg(not(feature = "riot-rs"))]
     if env::var("BUILDING_RIOT_RS").is_ok() {
         println!("");
@@ -29,148 +25,107 @@ fn main() {
     let compile_commands_json = "DEP_RIOT_BUILD_COMPILE_COMMANDS_JSON";
 
     println!("cargo:rerun-if-env-changed=BUILDING_RIOT_RS");
-    println!("cargo:rerun-if-env-changed=RIOT_CC");
-    println!("cargo:rerun-if-env-changed=RIOT_CFLAGS");
     println!("cargo:rerun-if-env-changed={}", &compile_commands_json);
 
-    if let Ok(commands_json) = env::var(compile_commands_json) {
-        println!("cargo:rerun-if-changed={}", commands_json);
-        let commands_file = std::fs::File::open(&commands_json)
-            .expect(&format!("Failed to open {}", &commands_json));
+    let Ok(commands_json) = env::var(compile_commands_json) else {
+        panic!("Passing RIOT_COMPILE_COMMANDS_JSON is mandatory; passing RIOT_CC / RIOT_CFLAGS is not supported any more.");
+    };
 
-        #[derive(Debug, serde::Deserialize)]
-        struct Entry {
-            arguments: Vec<String>,
+    println!("cargo:rerun-if-changed={}", commands_json);
+    let commands_file =
+        std::fs::File::open(&commands_json).expect(&format!("Failed to open {}", &commands_json));
+
+    #[derive(Debug, serde::Deserialize)]
+    struct Entry {
+        arguments: Vec<String>,
+    }
+    let parsed: Vec<Entry> = serde_json::from_reader(commands_file)
+        .expect(&format!("Failed to parse {}", &compile_commands_json));
+
+    // We need to find a consensus list -- otherwise single modules like stdio_uart that
+    // defines anything odd for its own purpose can throw things off. (It's not like the actual
+    // ABI compatibility should suffer from them, for any flags like enum packing need to be
+    // the same systemwide anyway for things to to go very wrong) -- but at any rate, finding
+    // some consensus is to some extent necessary here).
+    //
+    // This is relatively brittle, but still better than the previous approach of just taking
+    // the first entry.
+    //
+    // A good long-term solution might be to take CFLAGS as the build system produces them, but
+    // pass them through the LLVMization process of create_compile_commands without actually
+    // turning them into compile commands.
+    let mut consensus_cc: Option<&str> = None;
+    let mut consensus_cflag_groups: Option<Vec<Vec<&str>>> = None;
+    for entry in parsed.iter() {
+        if let Some(consensus_cc) = consensus_cc.as_ref() {
+            assert!(consensus_cc == &entry.arguments[0])
+        } else {
+            consensus_cc = Some(&entry.arguments[0]);
         }
-        let parsed: Vec<Entry> = serde_json::from_reader(commands_file)
-            .expect(&format!("Failed to parse {}", &compile_commands_json));
-
-        // We need to find a consensus list -- otherwise single modules like stdio_uart that
-        // defines anything odd for its own purpose can throw things off. (It's not like the actual
-        // ABI compatibility should suffer from them, for any flags like enum packing need to be
-        // the same systemwide anyway for things to to go very wrong) -- but at any rate, finding
-        // some consensus is to some extent necessary here).
-        //
-        // This is relatively brittle, but still better than the previous approach of just taking
-        // the first entry.
-        //
-        // A good long-term solution might be to take CFLAGS as the build system produces them, but
-        // pass them through the LLVMization process of create_compile_commands without actually
-        // turning them into compile commands.
-        let mut consensus_cc: Option<&str> = None;
-        let mut consensus_cflag_groups: Option<Vec<Vec<&str>>> = None;
-        for entry in parsed.iter() {
-            if let Some(consensus_cc) = consensus_cc.as_ref() {
-                assert!(consensus_cc == &entry.arguments[0])
+        let arg_iter = entry.arguments[1..]
+            .iter()
+            .map(|s| s.as_str())
+            // Anything after -c is not CFLAGS but concrete input/output stuff.
+            .take_while(|&s| s != "-c" && s != "-MQ");
+        // Heuristically grouping them to drop different arguments as whole group
+        let mut cflag_groups = vec![];
+        for mut arg in arg_iter {
+            if arg.starts_with("-I") {
+                // -I arguments are given inconsistently with and without trailing slashes;
+                // removing them keeps them from being pruned from the consensus set
+                arg = arg.trim_end_matches('/');
+            }
+            if arg.starts_with('-') {
+                cflag_groups.push(vec![arg]);
             } else {
-                consensus_cc = Some(&entry.arguments[0]);
+                cflag_groups
+                    .last_mut()
+                    .expect("CFLAG options all start with a dash")
+                    .push(arg);
             }
-            let arg_iter = entry.arguments[1..]
-                .iter()
-                .map(|s| s.as_str())
-                // Anything after -c is not CFLAGS but concrete input/output stuff.
-                .take_while(|&s| s != "-c" && s != "-MQ");
-            // Heuristically grouping them to drop different arguments as whole group
-            let mut cflag_groups = vec![];
-            for mut arg in arg_iter {
-                if arg.starts_with("-I") {
-                    // -I arguments are given inconsistently with and without trailing slashes;
-                    // removing them keeps them from being pruned from the consensus set
-                    arg = arg.trim_end_matches('/');
-                }
-                if arg.starts_with('-') {
-                    cflag_groups.push(vec![arg]);
-                } else {
-                    cflag_groups
-                        .last_mut()
-                        .expect("CFLAG options all start with a dash")
-                        .push(arg);
-                }
-            }
-            if let Some(consensus_cflag_groups) = consensus_cflag_groups.as_mut() {
-                if &cflag_groups != consensus_cflag_groups {
-                    // consensus is in a good ordering, so we'll just strip it down
-                    *consensus_cflag_groups = consensus_cflag_groups
-                        .drain(..)
-                        .filter(|i| {
-                            let mut keep = cflag_groups.contains(i);
-                            // USEMODULE_INCLUDES are sometimes not in all of the entries; see note
-                            // on brittleness above.
-                            keep |= i[0].starts_with("-I");
-                            // Left as multiple lines to ease hooking in with debug statements when
-                            // something goes wrong again...
-                            keep
-                        })
-                        .collect();
-                    // Hot-fixing the merging algorithm to even work when an (always to be kept) -I
-                    // is not in the initial set
-                    for group in cflag_groups.drain(..) {
-                        if group[0].starts_with("-I") {
-                            if !consensus_cflag_groups.contains(&group) {
-                                consensus_cflag_groups.push(group);
-                            }
+        }
+        if let Some(consensus_cflag_groups) = consensus_cflag_groups.as_mut() {
+            if &cflag_groups != consensus_cflag_groups {
+                // consensus is in a good ordering, so we'll just strip it down
+                *consensus_cflag_groups = consensus_cflag_groups
+                    .drain(..)
+                    .filter(|i| {
+                        let mut keep = cflag_groups.contains(i);
+                        // USEMODULE_INCLUDES are sometimes not in all of the entries; see note
+                        // on brittleness above.
+                        keep |= i[0].starts_with("-I");
+                        // Left as multiple lines to ease hooking in with debug statements when
+                        // something goes wrong again...
+                        keep
+                    })
+                    .collect();
+                // Hot-fixing the merging algorithm to even work when an (always to be kept) -I
+                // is not in the initial set
+                for group in cflag_groups.drain(..) {
+                    if group[0].starts_with("-I") {
+                        if !consensus_cflag_groups.contains(&group) {
+                            consensus_cflag_groups.push(group);
                         }
                     }
                 }
-            } else {
-                consensus_cflag_groups = Some(cflag_groups);
             }
+        } else {
+            consensus_cflag_groups = Some(cflag_groups);
         }
-        cc = consensus_cc
-            .expect("Entries are present in compile_commands.json")
-            .to_string();
-        cflags = shlex::join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s));
-
-        let usemodule = {
-            #[cfg(not(feature = "riot-rs"))]
-            {
-                println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
-                env::var("RIOT_USEMODULE").expect(&format!(
-                    "RIOT_USEMODULE is required when {} is given",
-                    &compile_commands_json,
-                ))
-            }
-            #[cfg(feature = "riot-rs")]
-            {
-                println!("cargo:rerun-if-env-changed=DEP_RIOT_BUILD_DIR");
-                let riot_builddir =
-                    env::var("DEP_RIOT_BUILD_DIR").expect("DEP_RIOT_BUILD_DIR unset?");
-                get_riot_var(&riot_builddir, "USEMODULE")
-            }
-        };
-
-        for m in usemodule.split(" ") {
-            // Hack around https://github.com/RIOT-OS/RIOT/pull/16129#issuecomment-805810090
-            write!(
-                cflags,
-                " -DMODULE_{}",
-                m.to_uppercase()
-                    // avoid producing MODULE_BOARDS_COMMON_SAMDX1-ARDUINO-BOOTLOADER
-                    .replace('-', "_")
-            )
-            .unwrap();
-        }
-    } else {
-        cc = env::var("RIOT_CC")
-            .expect("Please pass in RIOT_CC; see README.md for details.")
-            .clone();
-        cflags = env::var("RIOT_CFLAGS")
-            .expect("Please pass in RIOT_CFLAGS; see README.md for details.");
     }
-
-    // pass CC and CFLAGS to dependees
-    // this requires a `links = "riot-sys"` directive in Cargo.toml.
-    // Dependees can then access these as DEP_RIOT_SYS_CC and DEP_RIOT_SYS_CFLAGS.
-    println!("cargo:CC={}", &cc);
-    println!("cargo:CFLAGS={}", &cflags);
+    let cc = consensus_cc
+        .expect("Entries are present in compile_commands.json")
+        .to_string();
 
     println!("cargo:rerun-if-changed=riot-bindgen.h");
 
-    let cflags = shlex::split(&cflags).expect("Odd shell escaping in RIOT_CFLAGS");
-    let cflags: Vec<String> = cflags
-        .into_iter()
-        .filter(|x| {
-            match x.as_ref() {
+    let cflags: Vec<&str> = consensus_cflag_groups
+        .unwrap()
+        .iter()
+        .flatten()
+        .map(|v| *v)
+        .filter(|&x| {
+            match x {
                 // These will be in riotbuild.h as well, and better there because bindgen emits
                 // consts for data from files but not from defines (?)
                 x if x.starts_with("-D") => false,
@@ -380,9 +335,9 @@ fn main() {
         panic!("riot-sys only accepts clang style CFLAGS. RIOT can produce them using the compile_commands tool even when using a non-clang compiler, such as GCC.");
     };
 
-    let arguments: Vec<_> = core::iter::once("any-cc".to_string())
+    let arguments: Vec<_> = core::iter::once("any-cc")
         .chain(cflags.into_iter())
-        .chain(core::iter::once(c2rust_infile.to_string()))
+        .chain(core::iter::once(c2rust_infile))
         .collect();
     let compile_commands = json!([{
         "arguments": arguments,
@@ -642,8 +597,6 @@ fn main() {
         /// This is equivalent to not having the marker in the first place, except that their
         /// presence serves as a reminder to not reuse that marker name.
         Never,
-        /// A marker that is set if the given string is found in the bindgen output.
-        InCode(&'static str),
         /// A marker that is set if its name is found in the bindgen output. Shorthand for
         /// Text(name).
         NameInCode,
@@ -673,7 +626,6 @@ fn main() {
     ];
     for (needle, name) in markers {
         let found = match needle {
-            InCode(s) => bindgen_output.contains(s),
             NameInCode => bindgen_output.contains(name),
             Always => true,
             Never => false,

@@ -11,8 +11,6 @@ keywords = ["riot", "riot-os", "iot", "bindings"]
 categories = ["external-ffi-bindings", "no-std"]
 license = "LGPL-2.1"
 
-links = "riot-sys"
-
 [dependencies]
 cty = "^0.2"
 c2rust-asm-casts = "0.2"
@@ -25,7 +23,6 @@ riot-rs-core = { version = "< 0.2.0", optional = true }
 
 [build-dependencies]
 bindgen = "^0.64"
-shlex = "^1"
 serde_json = "1"
 serde = { version = "1", features = [ "derive" ] }
 regex = "1"
