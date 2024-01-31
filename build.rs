@@ -123,41 +123,6 @@ fn main() {
     cflags = shlex::try_join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s))
         .expect("Input is not expected to contain NUL characters");
 
-    let usemodule = {
-        #[cfg(not(feature = "riot-rs"))]
-        {
-            println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
-            env::var("RIOT_USEMODULE").expect(&format!(
-                "RIOT_USEMODULE is required when {} is given",
-                &compile_commands_json,
-            ))
-        }
-        #[cfg(feature = "riot-rs")]
-        {
-            println!("cargo:rerun-if-env-changed=DEP_RIOT_BUILD_DIR");
-            let riot_builddir = env::var("DEP_RIOT_BUILD_DIR").expect("DEP_RIOT_BUILD_DIR unset?");
-            get_riot_var(&riot_builddir, "USEMODULE")
-        }
-    };
-
-    for m in usemodule.split(" ") {
-        // Hack around https://github.com/RIOT-OS/RIOT/pull/16129#issuecomment-805810090
-        write!(
-            cflags,
-            " -DMODULE_{}",
-            m.to_uppercase()
-                // avoid producing MODULE_BOARDS_COMMON_SAMDX1-ARDUINO-BOOTLOADER
-                .replace('-', "_")
-        )
-        .unwrap();
-    }
-
-    // pass CC and CFLAGS to dependees
-    // this requires a `links = "riot-sys"` directive in Cargo.toml.
-    // Dependees can then access these as DEP_RIOT_SYS_CC and DEP_RIOT_SYS_CFLAGS.
-    println!("cargo:CC={}", &cc);
-    println!("cargo:CFLAGS={}", &cflags);
-
     println!("cargo:rerun-if-changed=riot-bindgen.h");
 
     let cflags = shlex::split(&cflags).expect("Odd shell escaping in RIOT_CFLAGS");

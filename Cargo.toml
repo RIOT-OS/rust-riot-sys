@@ -11,8 +11,6 @@ keywords = ["riot", "riot-os", "iot", "bindings"]
 categories = ["external-ffi-bindings", "no-std"]
 license = "LGPL-2.1"
 
-links = "riot-sys"
-
 [dependencies]
 cty = "^0.2"
 c2rust-asm-casts = "0.2"
