@@ -126,10 +126,10 @@ fn main() {
             #[cfg(not(feature = "riot-rs"))]
             {
                 println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
-                env::var("RIOT_USEMODULE").expect(&format!(
-                    "RIOT_USEMODULE is required when {} is given",
-                    &compile_commands_json,
-                ))
+                // We tolerate the absence. Older versions of riot-wrappers would then fail to
+                // enable modules, but newer versions just work without it (and would need a dummy
+                // variable passed in otherwise). On the long run, this is going away anyway.
+                env::var("RIOT_USEMODULE").unwrap_or_default()
             }
             #[cfg(feature = "riot-rs")]
             {
