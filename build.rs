@@ -119,16 +119,17 @@ fn main() {
         cc = consensus_cc
             .expect("Entries are present in compile_commands.json")
             .to_string();
-        cflags = shlex::join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s));
+        cflags = shlex::try_join(consensus_cflag_groups.unwrap().iter().flatten().map(|s| *s))
+            .expect("Input is not expected to contain NUL characters");
 
         let usemodule = {
             #[cfg(not(feature = "riot-rs"))]
             {
                 println!("cargo:rerun-if-env-changed=RIOT_USEMODULE");
-                env::var("RIOT_USEMODULE").expect(&format!(
-                    "RIOT_USEMODULE is required when {} is given",
-                    &compile_commands_json,
-                ))
+                // We tolerate the absence. Older versions of riot-wrappers would then fail to
+                // enable modules, but newer versions just work without it (and would need a dummy
+                // variable passed in otherwise). On the long run, this is going away anyway.
+                env::var("RIOT_USEMODULE").unwrap_or_default()
             }
             #[cfg(feature = "riot-rs")]
             {
@@ -642,8 +643,6 @@ fn main() {
         /// This is equivalent to not having the marker in the first place, except that their
         /// presence serves as a reminder to not reuse that marker name.
         Never,
-        /// A marker that is set if the given string is found in the bindgen output.
-        InCode(&'static str),
         /// A marker that is set if its name is found in the bindgen output. Shorthand for
         /// Text(name).
         NameInCode,
@@ -673,7 +672,6 @@ fn main() {
     ];
     for (needle, name) in markers {
         let found = match needle {
-            InCode(s) => bindgen_output.contains(s),
             NameInCode => bindgen_output.contains(name),
             Always => true,
             Never => false,
