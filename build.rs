@@ -486,6 +486,13 @@ fn main() {
             .to_string();
     }
 
+    // On 64-bit native, what gets emitted as vprintf(_, _, _: __builtin_va_list) gets emitted as
+    // vprintf(_, _, _: core::ffi::VaList), which is unsupported in stable -- but we don't use that
+    // function, it's just an unfortunate side effect of --preserve-unused-functions. This quick
+    // workaround enables building and ensures that the function is never called.
+    rustcode = rustcode.replace("::core::ffi::VaList", "::core::convert::Infallible");
+    rustcode = rustcode.replace("__arg.as_va_list()", "__arg");
+
     // Replace the function declarations with ... usually something pub, but special considerations
     // may apply
     let mut rustcode_functionsreplaced = String::new();
