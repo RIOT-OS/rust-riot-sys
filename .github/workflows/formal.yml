@@ -8,17 +8,19 @@ on:
 jobs:
   rustfmt:
     runs-on: ubuntu-latest
-    container: rustlang/rust:nightly
+    container: docker.io/rust
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
+    - name: Add rustfmt component
+      run: rustup component add rustfmt
     - name: Run cargo-fmt
       run: cargo fmt --check
 
   cargo-readme:
     runs-on: ubuntu-latest
-    container: rustlang/rust:nightly
+    container: docker.io/rust
     steps:
     - uses: actions/checkout@v3
       with:
@@ -28,4 +30,4 @@ jobs:
         crate: cargo-readme
         version: latest
     - name: Verify that README.rst is up to date
-      run: cargo +nightly readme | diff /dev/stdin README.md
+      run: cargo readme | diff /dev/stdin README.md
