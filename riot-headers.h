@@ -112,6 +112,17 @@
 #ifdef MODULE_GNRC_ICMPV6
 #include "net/gnrc/icmpv6.h"
 #endif
+#ifdef MODULE_HASHES
+#include <hashes.h>
+#include <hashes/aes128_cmac.h>
+#include <hashes/md5.h>
+#include <hashes/pbkdf2.h>
+#include <hashes/sha1.h>
+#include <hashes/sha224.h>
+#include <hashes/sha256.h>
+#include <hashes/sha3.h>
+#include <hashes/sha512.h>
+#endif
 #ifdef MODULE_NANOCOAP
 #include <net/nanocoap.h>
 #endif
