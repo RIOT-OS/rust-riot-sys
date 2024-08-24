@@ -309,6 +309,13 @@ fn main() {
         macro_functions.push((format!("LED{}_ON", i), "void", None, false, None));
         macro_functions.push((format!("LED{}_OFF", i), "void", None, false, None));
         macro_functions.push((format!("LED{}_TOGGLE", i), "void", None, false, None));
+        macro_functions.push((
+            format!("LED{}_IS_PRESENT", i),
+            "int",
+            None,
+            true,
+            Some("-1"),
+        ));
     }
 
     let mut c_code = String::new();
