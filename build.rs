@@ -263,11 +263,11 @@ fn main() {
     // These constant initializers are unusable without knowledge of which type they're for; adding
     // the information here to build explicit consts
     let macro_functions = [
-        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", None, true),
-        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", None, true),
-        ("MUTEX_INIT", "mutex_t", None, true),
+        ("SOCK_IPV4_EP_ANY", "sock_udp_ep_t", None, true, None),
+        ("SOCK_IPV6_EP_ANY", "sock_udp_ep_t", None, true, None),
+        ("MUTEX_INIT", "mutex_t", None, true, None),
         // neither C2Rust nor bindgen understand the cast without help
-        ("STATUS_NOT_FOUND", "thread_status_t", None, true),
+        ("STATUS_NOT_FOUND", "thread_status_t", None, true, None),
         // If any board is ever added that works completely differently, this'll have to go behind
         // a feature-gate
         (
@@ -277,29 +277,38 @@ fn main() {
             // would be nice to have them const, but on boards like samd21-xpro that'd require
             // several nightly features (const_ptr_offset, const_mut_refs).
             false,
+            None,
         ),
         // These are bound to the signature already in periph_init.
-        ("I2C_DEV", "i2c_t", Some("unsigned num"), false),
-        ("SPI_DEV", "spi_t", Some("unsigned num"), false),
+        ("I2C_DEV", "i2c_t", Some("unsigned num"), false, None),
+        ("SPI_DEV", "spi_t", Some("unsigned num"), false, None),
         // No good source on why this sould have a fixed signature, but at this point it's a
         // pattern.
-        ("UART_DEV", "uart_t", Some("unsigned num"), false),
-        ("PWM_DEV", "pwm_t", Some("unsigned num"), false),
-        ("ADC_LINE", "adc_t", Some("unsigned num"), false),
-        ("TIMER_DEV", "timer_t", Some("unsigned num"), false),
-        ("QDEC_DEV", "qdec_t", Some("unsigned num"), false),
-        ("DAC_LINE", "dac_t", Some("unsigned num"), false),
+        ("UART_DEV", "uart_t", Some("unsigned num"), false, None),
+        ("PWM_DEV", "pwm_t", Some("unsigned num"), false, None),
+        ("ADC_LINE", "adc_t", Some("unsigned num"), false, None),
+        ("TIMER_DEV", "timer_t", Some("unsigned num"), false, None),
+        ("QDEC_DEV", "qdec_t", Some("unsigned num"), false, None),
+        ("DAC_LINE", "dac_t", Some("unsigned num"), false, None),
     ];
     let mut macro_functions: Vec<_> = macro_functions
         .iter()
-        .map(|(macro_name, return_type, args, is_const)| {
-            (macro_name.to_string(), *return_type, *args, *is_const)
-        })
+        .map(
+            |(macro_name, return_type, args, is_const, fallback_value)| {
+                (
+                    macro_name.to_string(),
+                    *return_type,
+                    *args,
+                    *is_const,
+                    *fallback_value,
+                )
+            },
+        )
         .collect();
     for i in 0..8 {
-        macro_functions.push((format!("LED{}_ON", i), "void", None, false));
-        macro_functions.push((format!("LED{}_OFF", i), "void", None, false));
-        macro_functions.push((format!("LED{}_TOGGLE", i), "void", None, false));
+        macro_functions.push((format!("LED{}_ON", i), "void", None, false, None));
+        macro_functions.push((format!("LED{}_OFF", i), "void", None, false, None));
+        macro_functions.push((format!("LED{}_TOGGLE", i), "void", None, false, None));
     }
 
     let mut c_code = String::new();
@@ -308,7 +317,7 @@ fn main() {
         .read_to_string(&mut c_code)
         .expect("Failed to read riot-c2rust.h");
 
-    for (macro_name, return_type, args, _is_const) in macro_functions.iter() {
+    for (macro_name, return_type, args, _is_const, fallback_value) in macro_functions.iter() {
         let argnames = match args {
             None => "".to_string(),
             Some("void") => "()".to_string(),
@@ -340,7 +349,6 @@ fn main() {
 {return_type} macro_{macro_name}({args}) {{
     {macro_name}{argnames};
 }}
-#endif
                 ",
                 return_type = return_type,
                 macro_name = macro_name,
@@ -357,7 +365,6 @@ fn main() {
     {return_type} result = {macro_name}{argnames};
     return result;
 }}
-#endif
                 ",
                 return_type = return_type,
                 macro_name = macro_name,
@@ -366,6 +373,21 @@ fn main() {
             )
         }
         .unwrap();
+
+        if let Some(fallback_value) = fallback_value {
+            writeln!(
+                c_code,
+                r"
+#else
+{return_type} macro_{macro_name}({args}) {{
+    return {fallback_value};
+}}
+                     ",
+                args = args.unwrap_or("void"),
+            )
+            .unwrap();
+        }
+        writeln!(c_code, r" #endif").unwrap();
     }
 
     let mut outfile =
@@ -509,7 +531,7 @@ fn main() {
         let macro_details = if funcname.len() > 5 && &funcname[..6] == "macro_" {
             macro_functions
                 .iter()
-                .filter(|(macro_name, _, _, _)| &funcname[6..] == *macro_name)
+                .filter(|(macro_name, _, _, _, _)| &funcname[6..] == *macro_name)
                 .next()
         } else {
             None
@@ -530,7 +552,7 @@ fn main() {
 
             // As below (no need for extern), and they are const as declared ni the macro_functions
             // list.
-            (_, Some((_, _, _, is_const))) => {
+            (_, Some((_, _, _, is_const, _))) => {
                 // No "pub" because that's already a "pub" in front of it, they were never static
                 match is_const {
                     // FIXME: These should be unsafe -- just because most of them are const doesn't
@@ -611,7 +633,7 @@ fn main() {
     .iter()
     .map(|name| name.to_string())
     .collect();
-    for (macro_name, _, _, _) in macro_functions.iter() {
+    for (macro_name, _, _, _, _) in macro_functions.iter() {
         toplevel_from_inline.push(format!("macro_{}", macro_name));
     }
     let toplevel_from_inline: Vec<String> = toplevel_from_inline
