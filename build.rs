@@ -229,7 +229,7 @@ fn main() {
         .no_debug("ble_hci_ev_le_subev_periodic_adv_rpt")
         .no_debug("ext_adv_report")
         .derive_default(true)
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 
