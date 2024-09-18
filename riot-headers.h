@@ -164,6 +164,9 @@
 #ifdef MODULE_RIOTBOOT_SLOT
 #include "riotboot/slot.h"
 #endif
+#ifdef MODULE_TINY_STRERROR
+#include "tiny_strerror.h"
+#endif
 #ifdef MODULE_UUID
 #include "uuid.h"
 #endif
