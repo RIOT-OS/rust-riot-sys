@@ -171,7 +171,10 @@
 #include "uuid.h"
 #endif
 #ifdef MODULE_XTIMER
+// Uses C11 generics since https://github.com/RIOT-OS/RIOT/pull/20494
+#ifndef IS_C2RUST
 #include <xtimer.h>
+#endif
 #endif
 #ifdef MODULE_ZTIMER
 #include <ztimer.h>
