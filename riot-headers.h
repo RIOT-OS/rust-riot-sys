@@ -192,6 +192,13 @@
 #endif
 
 /* packages */
+#ifdef MODULE_NIMBLE_AUTOADV
+#  ifndef IS_C2RUST
+/* These contain variadic functions ... and besides, let's only use C2Rust where we need it */
+#    include "nimble_autoadv.h"
+#    include "nimble_autoadv_params.h"
+#  endif
+#endif
 #ifdef MODULE_NIMBLE_HOST
 #  include "host/ble_gatt.h"
 #  ifndef IS_C2RUST
