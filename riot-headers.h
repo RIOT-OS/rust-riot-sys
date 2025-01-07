@@ -179,6 +179,11 @@
 #ifdef MODULE_ZTIMER
 #include <ztimer.h>
 #endif
+#ifdef MODULE_ZTIMER64
+#ifndef IS_C2RUST
+#include <ztimer64.h>
+#endif
+#endif
 #ifdef MODULE_ZTIMER_PERIODIC
 #include <ztimer/periodic.h>
 #endif
