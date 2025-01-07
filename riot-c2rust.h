@@ -136,8 +136,35 @@ static inline void __masked_builtin_arm_set_fpscr(int fpscr){
 #undef atomic_intmax_t
 #undef atomic_uintmax_t
 
-// Allow header files that pull in lots of odd stuff but don't depend on
-// inlines -- like nimble's host/ble_gap.h -- to opt out of C2Rust altogether
-#define IS_C2RUST
+/* core libraries */
+/* for mutex_MUTEX_INIT */
+#include <mutex.h>
 
-#include "riot-headers.h"
+/* board include */
+#include <board.h>
+
+/* All peripherals are also built through C2Rust because the macro_SPI_DEV etc need them */
+#include "riot-periph.h"
+
+/* sys libraries */
+#ifdef MODULE_BLUETIL_AD
+#include <net/bluetil/ad.h>
+#endif
+#include <net/gnrc/netif.h>
+#include <net/gnrc/ipv6.h>
+#ifdef MODULE_NANOCOAP
+#include <net/nanocoap.h>
+#endif
+#ifdef MODULE_SHELL
+#include <shell.h>
+#endif
+#ifdef MODULE_SOCK
+#include <net/sock.h>
+#endif
+#ifdef MODULE_ZTIMER
+#include <ztimer.h>
+#endif
+
+/* This defines the fallback macros in the LED macros' absence from board.h;
+ * needed for macro_LED<nonexistent>_TOGGLE etc */
+#include <led.h>
