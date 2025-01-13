@@ -11,3 +11,5 @@
 use crate::libc;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+include!(concat!(env!("OUT_DIR"), "/enums.rs"));
