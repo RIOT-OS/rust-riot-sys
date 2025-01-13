@@ -241,7 +241,7 @@ fn main() {
         .no_debug("ble_hci_le_setup_iso_data_path_cp")
         .no_debug("ext_adv_report")
         .derive_default(true)
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 
