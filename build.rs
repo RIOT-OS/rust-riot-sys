@@ -324,7 +324,7 @@ fn main() {
         macro_functions.push((
             format!("LED{}_IS_PRESENT", i),
             "int",
-            None,
+            Some("defined"),
             true,
             Some("-1"),
         ));
@@ -336,12 +336,28 @@ fn main() {
         .read_to_string(&mut c_code)
         .expect("Failed to read riot-c2rust.h");
 
-    for (macro_name, return_type, args, _is_const, fallback_value) in macro_functions.iter() {
-        let argnames = match args {
-            None => "".to_string(),
-            Some("void") => "()".to_string(),
+    for (macro_name, return_type, mut args, _is_const, fallback_value) in macro_functions.iter() {
+        let expression = match args {
+            None => macro_name.to_string(),
+            Some("void") => format!("{macro_name}()"),
+            // This could be an extra field of another enum variant too -- its point is to
+            // introduce special handling for macros that are not just used with no arguments, but
+            // are really more of an ifdef guard.
+            //
+            // Those would also *work* with `None`, but it creates code such as `#define
+            // LED0_IS_PRESENT` / `int result =
+            // LED0_IS_PRESENT;`, which is kind of accepted by C2Rust to mean 1 (which is the case
+            // when passed through `-D` but maybe not by the one-argument `#define`), but also
+            // shows an error in the C2Rust output, which can be misleading when there is a
+            // different C2Rust error but those errors are also visible (as was the case in
+            // <https://github.com/RIOT-OS/RIOT/issues/21079>).
+            Some("defined") => {
+                args = None;
+                // No need to check further: the function is already inside an ifdef
+                "1".to_string()
+            }
             Some(args) => format!(
-                "({})",
+                "{macro_name}({})",
                 args.split(", ")
                     .map(|s| &s[s.find(" ").expect("Non-void args need to have names")..])
                     // Not really essential concepturally, but .join is only available on
@@ -366,13 +382,12 @@ fn main() {
 
 #ifdef {macro_name}
 {return_type} macro_{macro_name}({args}) {{
-    {macro_name}{argnames};
+    {expression};
 }}
                 ",
                 return_type = return_type,
-                macro_name = macro_name,
+                expression = expression,
                 args = args.unwrap_or("void"),
-                argnames = argnames,
             )
         } else {
             write!(
@@ -381,14 +396,13 @@ fn main() {
 
 #ifdef {macro_name}
 {return_type} macro_{macro_name}({args}) {{
-    {return_type} result = {macro_name}{argnames};
+    {return_type} result = {expression};
     return result;
 }}
                 ",
                 return_type = return_type,
-                macro_name = macro_name,
+                expression = expression,
                 args = args.unwrap_or("void"),
-                argnames = argnames,
             )
         }
         .unwrap();
