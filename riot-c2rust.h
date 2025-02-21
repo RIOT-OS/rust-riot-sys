@@ -12,9 +12,16 @@
 #define __builtin_arm_get_fpscr __masked_builtin_arm_get_fpscr
 #define __builtin_arm_set_fpscr __masked_builtin_arm_set_fpscr
 extern int missing_implementation_for_fpscr_in_c2rust_see_issue_345;
+/* Not having this attribute doesn't cause builds to fail, because there are no
+ * super strict checks active here; still, c2rust emits unused code warnigns as
+ * errors (without them actually being critical), and that can distract from
+ * the actual issue because when something else goes wrong and this is shown as
+ * an error, as seen in https://github.com/RIOT-OS/RIOT/issues/21079 */
+__attribute__((unused))
 static inline int __masked_builtin_arm_get_fpscr(void) {
 	return missing_implementation_for_fpscr_in_c2rust_see_issue_345;
 }
+__attribute__((unused))
 static inline void __masked_builtin_arm_set_fpscr(int fpscr){
 	missing_implementation_for_fpscr_in_c2rust_see_issue_345 = fpscr;
 }
