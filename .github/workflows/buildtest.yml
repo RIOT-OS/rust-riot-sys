@@ -31,14 +31,14 @@ jobs:
       #
       # strategy:
       #   matrix:
-      #     example: [examples/rust-hello-world examples/rust-gcoap tests/rust_minimal]
+      #     example: [examples/lang_support/official/rust-hello-world examples/lang_support/official/rust-gcoap tests/rust_minimal]
       #
       # setup here because really most of the stuff is the same, and the `cargo
       # update` is much faster the second time (so a parallel execution may
       # still be faster but uses 3x the resources)
       run: |
         export BOARDS='native sltb001a samr21-xpro'
-        DIRS='examples/rust-hello-world examples/rust-gcoap tests/rust_minimal'
+        DIRS='examples/lang_support/official/rust-hello-world examples/lang_support/official/rust-gcoap tests/rust_minimal'
         # It appears that there has to be output before :: commands really catch on
         echo "Building ${DIRS} on ${BOARDS}"
         echo "::echo ::on"
@@ -49,6 +49,6 @@ jobs:
           cargo update -p riot-sys -p riot-wrappers --aggressive
           cargo tree
           make buildtest BUILDTEST_MAKE_REDIRECT=''
-          cd ../..
+          cd -
           echo "::endgroup::"
         done
