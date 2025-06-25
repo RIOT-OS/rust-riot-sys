@@ -37,7 +37,7 @@ jobs:
       # update` is much faster the second time (so a parallel execution may
       # still be faster but uses 3x the resources)
       run: |
-        export BOARDS='native sltb001a samr21-xpro'
+        BOARDS='native sltb001a samr21-xpro'
         DIRS='examples/lang_support/official/rust-hello-world examples/lang_support/official/rust-gcoap tests/rust_minimal'
         # It appears that there has to be output before :: commands really catch on
         echo "Building ${DIRS} on ${BOARDS}"
@@ -45,10 +45,10 @@ jobs:
         cd RIOT
         for D in ${DIRS}; do
           cd ${D}
-          echo "::group::Building ${D}"
+          echo "::group::Preparing ${D}"
           cargo update -p riot-sys -p riot-wrappers --aggressive
           cargo tree
-          make buildtest BUILDTEST_MAKE_REDIRECT=''
           cd -
           echo "::endgroup::"
         done
+        ./dist/tools/compile_test/compile_like_murdock.py --boards $BOARDS --apps $DIRS -j16
