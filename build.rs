@@ -526,6 +526,12 @@ fn main() {
         rustcode = rustcode.replace(" asm!(", " llvm_asm!(");
     }
 
+    // Workaround and final check for https://github.com/immunant/c2rust/issues/1356
+    let mut rustcode = rustcode.replace("std::ffi::", "libc::");
+    if rustcode.contains("std::") {
+        panic!("There's a std in my soup: {}", rustcode);
+    }
+
     // Workaround for https://github.com/immunant/c2rust/issues/372
     rustcode = rustcode.replace("::core::intrinsics::", "crate::intrinsics_replacements::");
 
