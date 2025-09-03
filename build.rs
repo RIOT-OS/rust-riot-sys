@@ -469,6 +469,21 @@ fn main() {
         .stdout;
     let c2rust_version = String::from_utf8_lossy(&c2rust_version);
     print!("C2Rust binary {}, version: {}", c2rust, c2rust_version);
+    // Version won't tell us whether --translate-const-macros needs a TRANSLATE_CONST_MACROS
+    // argument or not, because people can also install from git
+    let c2rust_help = std::process::Command::new(&c2rust)
+        .args(&["transpile", "--help"])
+        .output()
+        .expect("C2Rust --help did not work")
+        .stdout;
+    let c2rust_help =
+        core::str::from_utf8(&c2rust_help).expect("C2Rust help had non-UTF8 characters");
+    let translate_const_macros_arg = if c2rust_help.contains("TRANSLATE_CONST_MACROS") {
+        "--translate-const-macros=conservative"
+    } else {
+        // versions up to 0.20
+        "--translate-const-macros"
+    };
     // FIXME: This does not rat on the used files. Most are probably included from riot-bindgen.h
     // anyway, tough.
     println!("Running C2Rust on {}", compile_commands_name);
@@ -479,7 +494,7 @@ fn main() {
             "--preserve-unused-functions",
             "--emit-modules",
             "--emit-no-std",
-            "--translate-const-macros",
+            translate_const_macros_arg,
             "--overwrite-existing",
             "--fail-on-error",
         ])
