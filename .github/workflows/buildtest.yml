@@ -26,6 +26,9 @@ jobs:
         echo '[patch.crates-io]' >> .cargo/config.toml
         echo 'riot-sys = { path = "../", version = "*" }' >> .cargo/config.toml
         echo 'riot-wrappers = { git = "https://github.com/RIOT-OS/rust-riot-wrappers" }' >> .cargo/config.toml
+    - name: Get very latest c2rust
+      run: |
+        cargo install c2rust --git https://github.com/immunant/c2rust
     - name: Build on selected platforms
       # not going with a 
       #
