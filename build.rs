@@ -257,6 +257,39 @@ fn main() {
         .expect("String writing never fails");
     let bindgen_output = std::str::from_utf8(&bindgen_output).expect("Rust source code is UTF-8");
 
+    // Add enums in here to be translated into Rust enums.
+    // The generated enums will be accessible as `riot_sys::<r_enum_name>`
+    //
+    // To add an enum provide (c_enum_name, new_rust_enum_name)
+    let generate_enums = [("senml_unit_t", "SenmlUnit")];
+
+    let mut enum_output = String::new();
+
+    for (c_enum, r_enum) in generate_enums {
+        let regex = regex::Regex::new(&format!(
+            "pub const {c_enum}_(?P<name>[^:]*):[^=]*= (?P<val>\\d*)"
+        ))
+        .unwrap();
+
+        enum_output.push_str(&format!("pub enum {r_enum} {{\n"));
+
+        for matc in regex.find_iter(bindgen_output) {
+            enum_output.push_str("    ");
+
+            enum_output.push_str(&regex.replace(matc.as_str(), "$name = $val"));
+
+            enum_output.push_str(",\n");
+        }
+
+        enum_output.push_str("}\n\n");
+    }
+
+    let enums_outfilename = out_path.join("enums.rs");
+    std::fs::File::create(enums_outfilename)
+        .expect("Could not create enums.rs file")
+        .write_all(enum_output.as_bytes())
+        .expect("Could not write enums to enums.rs");
+
     // Build a compile_commands.json, and run C2Rust
     //
     // The output is cleared beforehand (for c2rust no-ops when an output file is present), and the
