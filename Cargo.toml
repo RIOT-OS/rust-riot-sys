@@ -16,8 +16,6 @@ links = "riot-sys"
 
 [dependencies]
 c2rust-asm-casts = "0.2"
-# Relevant for some boards like the wemos-zero
-c2rust-bitfields = { version = "0.3", features = ["no_std"] }
 
 # optionally use RIOT-rs's riot-build
 riot-build = { version = "< 0.2.0", optional = true }

@@ -89,8 +89,6 @@ macro_rules! llvm_asm {
 
 use core::ffi as libc;
 
-use c2rust_bitfields::*;
-
 // This is a replacement for the `pub type __locale_t` and the IO lines that C2Rust generates
 // because of something from stdlib; it is stripped out of the compiled code and turned into a u8
 // pointer for lack of better ideas. (Leaving it as a pub struct would require unstable Rust).
