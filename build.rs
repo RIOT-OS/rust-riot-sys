@@ -491,7 +491,6 @@ fn main() {
         .args(&[
             "transpile",
             compile_commands_name,
-            "--preserve-unused-functions",
             "--emit-modules",
             "--emit-no-std",
             translate_const_macros_arg,
