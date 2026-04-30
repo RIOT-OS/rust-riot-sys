@@ -269,7 +269,8 @@ fn main() {
     let headercopy = out_path.join(c2rust_infile);
     println!("cargo:rerun-if-changed=riot-c2rust.h");
 
-    std::fs::copy("riot-headers.h", out_path.join("riot-headers.h"))
+    // C2Rust needs this in the output location next to the headercopy
+    std::fs::copy("riot-periph.h", out_path.join("riot-periph.h"))
         .expect("Failed to copy over header file");
 
     // These constant initializers are unusable without knowledge of which type they're for; adding
