@@ -200,4 +200,8 @@ void use_everything(void) {
 #ifdef MODULE_SOCK
 	gnrc_netreg_entry_init_cb(0, 0, 0);
 #endif
+
+#ifdef MODULE_SHELL
+	shell_run_forever(0, 0, 0);
+#endif
 }
