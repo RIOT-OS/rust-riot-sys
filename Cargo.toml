@@ -15,8 +15,6 @@ license = "LGPL-2.1"
 links = "riot-sys"
 
 [dependencies]
-c2rust-asm-casts = "0.2"
-
 # optionally use RIOT-rs's riot-build
 riot-build = { version = "< 0.2.0", optional = true }
 riot-rs-core = { version = "< 0.2.0", optional = true }
