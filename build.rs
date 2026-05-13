@@ -491,7 +491,6 @@ fn main() {
         .args(&[
             "transpile",
             compile_commands_name,
-            "--preserve-unused-functions",
             "--emit-modules",
             "--emit-no-std",
             translate_const_macros_arg,
@@ -630,6 +629,16 @@ fn main() {
     }
 
     rustcode = rustcode_functionsreplaced;
+
+    // We don't even need that function any more, we just have that in there so that c2rust gives
+    // us its callees as functions. (In bindgen, we'd just list the functions we'd like to have).
+    rustcode = rustcode.replace(
+        "pub pub unsafe fn use_everything()",
+        "#[cfg(false)] unsafe fn use_everything()",
+    );
+    // The macro_ wrappers are already `pub` because they are regular functions we create here that
+    // just go around the macro code; removing the double pub.
+    rustcode = rustcode.replace("pub pub unsafe fn ", "pub unsafe fn ");
 
     let output_replaced = out_path.join("riot_c2rust_replaced.rs");
     std::fs::File::create(output_replaced)
