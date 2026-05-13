@@ -186,6 +186,7 @@ void use_everything(void) {
 	gnrc_netif_ipv6_addrs_get(0, 0, 0);
 	gnrc_ipv6_nib_nc_get_nud_state(0);
 	gnrc_ipv6_nib_nc_is_router(0);
+	gnrc_netreg_entry_init_pid(0, 0, 0);
 
 #ifdef MODULE_NANOCOAP
 	coap_pkt_set_code(0, 0);
