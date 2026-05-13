@@ -189,7 +189,7 @@ fn main() {
         .header("riot-bindgen.h")
         .clang_args(&cflags)
         .use_core()
-        .ctypes_prefix("libc")
+        .ctypes_prefix("core::ffi")
         // We've traditionally used size_t explicitly and cast it in riot-wrappers; changing this
         // now (going from bindgen 0.60 to 0.64) would break where it's used (although we still
         // might instate a type alias for size_t later instead).

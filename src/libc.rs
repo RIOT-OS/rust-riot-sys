@@ -5,7 +5,7 @@
 
 #![allow(non_camel_case_types)]
 
-pub use cty::{
+pub use core::ffi::{
     c_char,
     c_double,
     c_float,
@@ -22,5 +22,4 @@ pub use cty::{
     // Not even loading size_t and ssize_t as they don't fit with bindgen's mapping anyway
 };
 
-// Used to be a dedicated type, pub-used to avoid breaking the API
 pub use core::ffi::c_void;
