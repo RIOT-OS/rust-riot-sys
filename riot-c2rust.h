@@ -198,7 +198,7 @@ void use_everything(void) {
 	sock_udp_recv(0, 0, 0, 0, 0);
 #endif
 
-#ifdef MODULE_SOCK
+#ifdef MODULE_GNRC_NETAPI_CALLBACKS
 	gnrc_netreg_entry_init_cb(0, 0, 0);
 #endif
 
